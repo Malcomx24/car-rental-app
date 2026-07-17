@@ -1,0 +1,14 @@
+node_modules
+.next
+out
+build
+coverage
+dist
+*.min.js
+package-lock.json
+pnpm-lock.yaml
+yarn.lock
+.env
+.env.local
+.env*.local
+prisma/migrations

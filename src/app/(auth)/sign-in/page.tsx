@@ -44,6 +44,7 @@ export default function SignInPage() {
         <SignIn
           routing="path"
           path="/sign-in"
+          afterSignInUrl="/dashboard"
           appearance={{
             elements: {
               rootBox: "w-full",

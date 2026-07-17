@@ -9,7 +9,7 @@ export async function GET() {
       return NextResponse.json({ user: null }, { status: 401 });
     }
 
-    const user = await db.user.findUnique({
+    let user = await db.user.findUnique({
       where: { clerkId: userId },
       select: {
         id: true,
@@ -26,7 +26,50 @@ export async function GET() {
     });
 
     if (!user) {
-      return NextResponse.json({ user: null }, { status: 404 });
+      const clerkUser = await currentUser();
+      if (!clerkUser) {
+        return NextResponse.json({ user: null }, { status: 404 });
+      }
+
+      const email = clerkUser.emailAddresses?.[0]?.emailAddress;
+      if (!email) {
+        return NextResponse.json({ user: null }, { status: 404 });
+      }
+
+      const newUser = await db.user.upsert({
+        where: { clerkId: userId },
+        update: {
+          email,
+          firstName: clerkUser.firstName || undefined,
+          lastName: clerkUser.lastName || undefined,
+          avatar: clerkUser.imageUrl || undefined,
+          isEmailVerified: clerkUser.emailAddresses?.[0]?.verification?.status === "verified",
+          lastLoginAt: new Date(),
+        },
+        create: {
+          clerkId: userId,
+          email,
+          firstName: clerkUser.firstName || "User",
+          lastName: clerkUser.lastName || "",
+          avatar: clerkUser.imageUrl,
+          isEmailVerified: clerkUser.emailAddresses?.[0]?.verification?.status === "verified",
+          lastLoginAt: new Date(),
+        },
+        select: {
+          id: true,
+          clerkId: true,
+          email: true,
+          firstName: true,
+          lastName: true,
+          phone: true,
+          role: true,
+          avatar: true,
+          isEmailVerified: true,
+          createdAt: true,
+        },
+      });
+
+      user = newUser;
     }
 
     return NextResponse.json({ user });

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useSignIn } from "@clerk/nextjs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
@@ -11,6 +12,7 @@ export default function ForgotPasswordPage() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { isLoaded: clerkLoaded, signIn } = useSignIn();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -18,20 +20,21 @@ export default function ForgotPasswordPage() {
     setError("");
 
     try {
-      const res = await fetch("/api/auth/forgot-password", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
-      });
-
-      if (!res.ok) {
-        const data = await res.json();
-        throw new Error(data.error || "Something went wrong");
+      if (!clerkLoaded) {
+        throw new Error("Authentication is loading, please try again.");
       }
+
+      await signIn.create({
+        strategy: "reset_password_email_code",
+        identifier: email.trim(),
+      });
 
       setSuccess(true);
     } catch (err: unknown) {
-      const message = err instanceof Error ? err.message : "Something went wrong";
+      const message =
+        err instanceof Error
+          ? err.message
+          : "Something went wrong. Please try again.";
       setError(message);
     } finally {
       setIsLoading(false);
@@ -44,7 +47,8 @@ export default function ForgotPasswordPage() {
         <div className="text-center">
           <h1 className="text-2xl font-bold">Check Your Email</h1>
           <p className="text-muted-foreground mt-1">
-            If an account exists with {email}, you&apos;ll receive a password reset link shortly.
+            If an account exists with {email}, you&apos;ll receive a password reset
+            link shortly.
           </p>
         </div>
         <Link
@@ -92,7 +96,10 @@ export default function ForgotPasswordPage() {
 
       <p className="text-center text-sm text-muted-foreground">
         Remember your password?{" "}
-        <Link href="/sign-in" className="text-primary hover:underline font-medium">
+        <Link
+          href="/sign-in"
+          className="text-primary hover:underline font-medium"
+        >
           Sign in
         </Link>
       </p>

@@ -18,9 +18,15 @@ const publicRoutes = [
 
 const authRoutes = [
   "/sign-in",
+  "/sign-in/(.*)",
   "/sign-up",
+  "/sign-up/(.*)",
   "/forgot-password",
+  "/forgot-password/(.*)",
   "/reset-password",
+  "/reset-password/(.*)",
+  "/sso-callback",
+  "/sso-callback/(.*)",
 ];
 
 const isPublicRoute = createRouteMatcher(publicRoutes);

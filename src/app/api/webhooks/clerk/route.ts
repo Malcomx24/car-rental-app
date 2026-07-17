@@ -35,6 +35,14 @@ async function verifyWebhook(payload: string, headers: Record<string, string>) {
 
 export async function POST(request: Request) {
   try {
+    if (!webhookSecret) {
+      console.error("CLERK_WEBHOOK_SECRET not configured — webhook events will not be processed.");
+      return NextResponse.json(
+        { error: "Webhook secret not configured" },
+        { status: 500 }
+      );
+    }
+
     const payload = await request.text();
     const headerStore = await headers();
 
@@ -42,17 +50,11 @@ export async function POST(request: Request) {
     const svixTimestamp = headerStore.get("svix-timestamp") ?? "";
     const svixSignature = headerStore.get("svix-signature") ?? "";
 
-    let event: WebhookEvent;
-
-    if (webhookSecret) {
-      event = await verifyWebhook(payload, {
-        "svix-id": svixId,
-        "svix-timestamp": svixTimestamp,
-        "svix-signature": svixSignature,
-      });
-    } else {
-      event = JSON.parse(payload) as WebhookEvent;
-    }
+    const event = await verifyWebhook(payload, {
+      "svix-id": svixId,
+      "svix-timestamp": svixTimestamp,
+      "svix-signature": svixSignature,
+    });
 
     const eventType = event.type;
     const { id, email_addresses, first_name, last_name, image_url } = event.data;

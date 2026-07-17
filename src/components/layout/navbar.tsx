@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
 import { useAuth } from "@/hooks/use-auth";
+import { useClerk } from "@clerk/nextjs";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -34,6 +35,7 @@ export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [mounted, setMounted] = useState(false);
   const { isLoaded, isSignedIn, profile } = useAuth();
+  const { signOut } = useClerk();
 
   useEffect(() => {
     setMounted(true);
@@ -48,7 +50,7 @@ export function Navbar() {
     : "U";
 
   const handleSignOut = async () => {
-    await fetch("/api/auth/signout", { method: "POST" });
+    await signOut();
     window.location.href = "/";
   };
 

@@ -44,6 +44,7 @@ export default function SignUpPage() {
         <SignUp
           routing="path"
           path="/sign-up"
+          afterSignUpUrl="/dashboard"
           appearance={{
             elements: {
               rootBox: "w-full",

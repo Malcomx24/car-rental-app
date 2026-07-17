@@ -50,7 +50,7 @@ export default function AdminCarsPage() {
       const res = await fetch(`/api/cars?${params.toString()}`);
       const json = await res.json();
       if (json.success) {
-        setCars(json.data.map((c: Record<string, unknown> & { brand: Brand; category: Category; images: { url: string }[] }) => ({
+        setCars(json.data.map((c: Record<string, unknown> & { brand: { id: string; name: string }; category: Category; images: { url: string }[] }) => ({
           ...c,
           brand: c.brand,
           category: c.category,

@@ -47,7 +47,16 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
 
     const { id } = await params;
     const body = await request.json();
-    const { images, deleteImageIds, ...carData } = body;
+    const { images, deleteImageIds, brandName, ...carData } = body;
+
+    if (brandName && typeof brandName === "string" && brandName.trim()) {
+      const brand = await db.brand.upsert({
+        where: { name: brandName.trim() },
+        update: {},
+        create: { name: brandName.trim() },
+      });
+      carData.brandId = brand.id;
+    }
 
     const existing = await db.car.findUnique({ where: { id } });
     if (!existing) {

@@ -23,7 +23,6 @@ interface AdminCar {
   images: { url: string }[];
 }
 
-interface Brand { id: string; name: string; }
 interface Category { id: string; name: string; }
 
 export default function AdminCarsPage() {
@@ -36,7 +35,6 @@ export default function AdminCarsPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [brandFilter, setBrandFilter] = useState("");
   const [formOpen, setFormOpen] = useState(false);
-  const [brands, setBrands] = useState<Brand[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
 
   const fetchCars = useCallback(async () => {
@@ -73,7 +71,6 @@ export default function AdminCarsPage() {
       const res = await fetch("/api/cars/filters");
       const json = await res.json();
       if (json.success) {
-        setBrands(json.data.brands);
         setCategories(json.data.categories);
       }
     } catch (err) {
@@ -141,7 +138,6 @@ export default function AdminCarsPage() {
         open={formOpen}
         onClose={() => setFormOpen(false)}
         onSave={handleCreate}
-        brands={brands}
         categories={categories}
       />
     </div>

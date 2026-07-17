@@ -6,12 +6,10 @@ import { CarFormDialog } from "@/components/admin/car-form-dialog";
 import type { CarFormData } from "@/validations/car";
 import { Loader2 } from "lucide-react";
 
-interface Brand { id: string; name: string; }
 interface Category { id: string; name: string; }
 
 export default function AdminNewCarPage() {
   const router = useRouter();
-  const [brands, setBrands] = useState<Brand[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -20,7 +18,6 @@ export default function AdminNewCarPage() {
       .then((r) => r.json())
       .then((json) => {
         if (json.success) {
-          setBrands(json.data.brands);
           setCategories(json.data.categories);
         }
       })
@@ -55,7 +52,6 @@ export default function AdminNewCarPage() {
         open
         onClose={() => router.push("/admin/cars")}
         onSave={handleCreate}
-        brands={brands}
         categories={categories}
       />
     </div>

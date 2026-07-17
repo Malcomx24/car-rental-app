@@ -7,20 +7,17 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { Select } from "@/components/ui/select";
 import { useImageUpload } from "@/hooks/use-image-upload";
 import { carFormSchema, type CarFormData } from "@/validations/car";
 import { X, Upload, Loader2, Plus, Check } from "lucide-react";
 
-interface Brand { id: string; name: string; }
 interface Category { id: string; name: string; }
 
 interface CarFormDialogProps {
   open: boolean;
   onClose: () => void;
   onSave: (data: CarFormData, images: { url: string; alt?: string }[]) => Promise<void>;
-  initialData?: Partial<CarFormData> & { id?: string; images?: { id?: string; url: string; alt?: string }[] };
-  brands: Brand[];
+  initialData?: Partial<CarFormData> & { id?: string; brandName?: string; images?: { id?: string; url: string; alt?: string }[] };
   categories: Category[];
 }
 
@@ -39,7 +36,7 @@ function getInitialState(initialData?: CarFormDialogProps["initialData"]) {
   if (!initialData) {
     return {
       form: {
-        name: "", description: "", brandId: "", categoryId: "",
+        name: "", description: "", brandName: "", categoryId: "",
         year: new Date().getFullYear(), pricePerDay: 0,
         weekendPricePerDay: null, weeklyPrice: null, monthlyPrice: null,
         securityDeposit: 0, fuelType: "GASOLINE" as const,
@@ -59,7 +56,7 @@ function getInitialState(initialData?: CarFormDialogProps["initialData"]) {
     form: {
       name: initialData.name || "",
       description: initialData.description || "",
-      brandId: initialData.brandId || "",
+      brandName: initialData.brandName || initialData.brandId || "",
       categoryId: initialData.categoryId || "",
       year: initialData.year || new Date().getFullYear(),
       pricePerDay: initialData.pricePerDay || 0,
@@ -94,7 +91,7 @@ function getInitialState(initialData?: CarFormDialogProps["initialData"]) {
   };
 }
 
-export function CarFormDialog({ open, onClose, onSave, initialData, brands, categories }: CarFormDialogProps) {
+export function CarFormDialog({ open, onClose, onSave, initialData, categories }: CarFormDialogProps) {
   const { upload, uploading, error: uploadError } = useImageUpload();
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -224,11 +221,8 @@ export function CarFormDialog({ open, onClose, onSave, initialData, brands, cate
             </div>
             <div>
               <Label>Brand *</Label>
-              <select value={form.brandId} onChange={(e) => updateField("brandId", e.target.value)} className="w-full h-10 rounded-md border bg-background px-3 text-sm mt-1">
-                <option value="">Select brand</option>
-                {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
-              </select>
-              {errors.brandId && <p className="text-xs text-destructive mt-1">{errors.brandId}</p>}
+              <Input value={form.brandName || ""} onChange={(e) => updateField("brandName", e.target.value)} placeholder="e.g. BMW" className="mt-1" />
+              {errors.brandName && <p className="text-xs text-destructive mt-1">{errors.brandName}</p>}
             </div>
             <div>
               <Label>Category *</Label>

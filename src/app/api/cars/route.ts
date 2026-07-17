@@ -80,7 +80,16 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { images, ...carData } = body;
+    const { images, brandName, ...carData } = body;
+
+    if (brandName && typeof brandName === "string" && brandName.trim()) {
+      const brand = await db.brand.upsert({
+        where: { name: brandName.trim() },
+        update: {},
+        create: { name: brandName.trim() },
+      });
+      carData.brandId = brand.id;
+    }
 
     carData.slug = carData.slug || slugify(carData.name);
     carData.pricePerDay = Number(carData.pricePerDay);

@@ -44,13 +44,11 @@ interface CarDetail {
   images: { id: string; url: string; alt: string; isPrimary: boolean; order: number }[];
 }
 
-interface Brand { id: string; name: string; }
 interface Category { id: string; name: string; }
 
 export default function AdminCarEditPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [car, setCar] = useState<CarDetail | null>(null);
-  const [brands, setBrands] = useState<Brand[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [loading, setLoading] = useState(true);
   const [formOpen, setFormOpen] = useState(false);
@@ -66,7 +64,6 @@ export default function AdminCarEditPage({ params }: { params: Promise<{ id: str
       const filtersJson = await filtersRes.json();
       if (carJson.success) setCar(carJson.data);
       if (filtersJson.success) {
-        setBrands(filtersJson.data.brands);
         setCategories(filtersJson.data.categories);
       }
     } catch (err) {
@@ -240,7 +237,7 @@ export default function AdminCarEditPage({ params }: { params: Promise<{ id: str
         initialData={{
           name: car.name,
           description: car.description,
-          brandId: car.brand.id,
+          brandName: car.brand.name,
           categoryId: car.category.id,
           year: car.year,
           pricePerDay: Number(car.pricePerDay),
@@ -264,7 +261,6 @@ export default function AdminCarEditPage({ params }: { params: Promise<{ id: str
           isPublished: true,
           images: car.images.map((img) => ({ id: img.id, url: img.url, alt: img.alt })),
         }}
-        brands={brands}
         categories={categories}
       />
     </div>

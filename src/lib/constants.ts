@@ -13,6 +13,7 @@ export const NAV_LINKS = [
 export const ADMIN_NAV_LINKS = [
   { label: "Dashboard", href: "/admin", icon: "LayoutDashboard" },
   { label: "Cars", href: "/admin/cars", icon: "Car" },
+  { label: "Brands", href: "/admin/brands", icon: "Tag" },
   { label: "Bookings", href: "/admin/bookings", icon: "Calendar" },
   { label: "Customers", href: "/admin/customers", icon: "Users" },
   { label: "Payments", href: "/admin/payments", icon: "CreditCard" },

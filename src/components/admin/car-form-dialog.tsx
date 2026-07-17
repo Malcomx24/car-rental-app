@@ -56,7 +56,7 @@ function getInitialState(initialData?: CarFormDialogProps["initialData"]) {
     form: {
       name: initialData.name || "",
       description: initialData.description || "",
-      brandName: initialData.brandName || initialData.brandId || "",
+      brandName: initialData.brandName || "",
       categoryId: initialData.categoryId || "",
       year: initialData.year || new Date().getFullYear(),
       pricePerDay: initialData.pricePerDay || 0,

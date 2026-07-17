@@ -17,6 +17,7 @@ import {
   Bell,
   FileText,
   Star,
+  Tag,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -25,6 +26,7 @@ import { useState } from "react";
 const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Cars", href: "/admin/cars", icon: Car },
+  { label: "Brands", href: "/admin/brands", icon: Tag },
   { label: "Bookings", href: "/admin/bookings", icon: CalendarDays },
   { label: "Customers", href: "/admin/customers", icon: Users },
   { label: "Reviews", href: "/admin/reviews", icon: Star },

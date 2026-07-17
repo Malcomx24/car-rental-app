@@ -35,8 +35,7 @@ export default clerkMiddleware(async (auth, req) => {
 
   if (isAuthRoute(req)) {
     if (userId) {
-      const url = new URL("/dashboard", req.url);
-      return Response.redirect(url);
+      return Response.redirect(new URL("/dashboard", req.url));
     }
     return;
   }
@@ -46,8 +45,6 @@ export default clerkMiddleware(async (auth, req) => {
     signInUrl.searchParams.set("redirect_url", req.url);
     return Response.redirect(signInUrl);
   }
-
-  return;
 });
 
 export const config = {

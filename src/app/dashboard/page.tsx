@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { ProtectedRoute } from "@/components/shared/protected-route";
 
 const DashboardOverview = dynamic(
   () => import("@/components/shared/dashboard-content"),
@@ -8,5 +9,9 @@ const DashboardOverview = dynamic(
 );
 
 export default function DashboardPage() {
-  return <DashboardOverview />;
+  return (
+    <ProtectedRoute>
+      <DashboardOverview />
+    </ProtectedRoute>
+  );
 }

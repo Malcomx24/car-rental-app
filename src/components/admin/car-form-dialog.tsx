@@ -11,13 +11,14 @@ import { useImageUpload } from "@/hooks/use-image-upload";
 import { carFormSchema, type CarFormData } from "@/validations/car";
 import { X, Upload, Loader2, Plus, Check } from "lucide-react";
 
+interface Brand { id: string; name: string; }
 interface Category { id: string; name: string; }
 
 interface CarFormDialogProps {
   open: boolean;
   onClose: () => void;
   onSave: (data: CarFormData, images: { url: string; alt?: string }[]) => Promise<void>;
-  initialData?: Partial<CarFormData> & { id?: string; brandName?: string; images?: { id?: string; url: string; alt?: string }[] };
+  initialData?: Partial<CarFormData> & { id?: string; images?: { id?: string; url: string; alt?: string }[] };
   categories: Category[];
 }
 
@@ -36,7 +37,7 @@ function getInitialState(initialData?: CarFormDialogProps["initialData"]) {
   if (!initialData) {
     return {
       form: {
-        name: "", description: "", brandName: "", categoryId: "",
+        name: "", description: "",         brandId: "", categoryId: "",
         year: new Date().getFullYear(), pricePerDay: 0,
         weekendPricePerDay: null, weeklyPrice: null, monthlyPrice: null,
         securityDeposit: 0, fuelType: "GASOLINE" as const,
@@ -56,7 +57,7 @@ function getInitialState(initialData?: CarFormDialogProps["initialData"]) {
     form: {
       name: initialData.name || "",
       description: initialData.description || "",
-      brandName: initialData.brandName || "",
+      brandId: initialData.brandId || "",
       categoryId: initialData.categoryId || "",
       year: initialData.year || new Date().getFullYear(),
       pricePerDay: initialData.pricePerDay || 0,
@@ -95,6 +96,14 @@ export function CarFormDialog({ open, onClose, onSave, initialData, categories }
   const { upload, uploading, error: uploadError } = useImageUpload();
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [brands, setBrands] = useState<Brand[]>([]);
+
+  useEffect(() => {
+    fetch("/api/brands?limit=1000")
+      .then((r) => r.json())
+      .then((json) => { if (json.success) setBrands(json.data); })
+      .catch(() => {});
+  }, []);
 
   const initialState = getInitialState(initialData);
 
@@ -221,8 +230,11 @@ export function CarFormDialog({ open, onClose, onSave, initialData, categories }
             </div>
             <div>
               <Label>Brand *</Label>
-              <Input value={form.brandName || ""} onChange={(e) => updateField("brandName", e.target.value)} placeholder="e.g. BMW" className="mt-1" />
-              {errors.brandName && <p className="text-xs text-destructive mt-1">{errors.brandName}</p>}
+              <select value={form.brandId || ""} onChange={(e) => updateField("brandId", e.target.value)} className="w-full h-10 rounded-md border bg-background px-3 text-sm mt-1">
+                <option value="">Select brand</option>
+                {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+              </select>
+              {errors.brandId && <p className="text-xs text-destructive mt-1">{errors.brandId}</p>}
             </div>
             <div>
               <Label>Category *</Label>

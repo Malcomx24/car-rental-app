@@ -237,7 +237,7 @@ export default function AdminCarEditPage({ params }: { params: Promise<{ id: str
         initialData={{
           name: car.name,
           description: car.description,
-          brandName: car.brand.name,
+          brandId: car.brand.id,
           categoryId: car.category.id,
           year: car.year,
           pricePerDay: Number(car.pricePerDay),

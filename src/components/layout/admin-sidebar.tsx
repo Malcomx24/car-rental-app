@@ -18,6 +18,7 @@ import {
   FileText,
   Star,
   Tag,
+  FolderOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -27,6 +28,7 @@ const navItems = [
   { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
   { label: "Cars", href: "/admin/cars", icon: Car },
   { label: "Brands", href: "/admin/brands", icon: Tag },
+  { label: "Categories", href: "/admin/categories", icon: FolderOpen },
   { label: "Bookings", href: "/admin/bookings", icon: CalendarDays },
   { label: "Customers", href: "/admin/customers", icon: Users },
   { label: "Reviews", href: "/admin/reviews", icon: Star },

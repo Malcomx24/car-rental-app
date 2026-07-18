@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 import { CarReviews } from "@/components/shared/car-reviews";
 import { ReviewForm } from "@/components/shared/review-form";
+import { useFavorites } from "@/hooks/use-favorites";
 
 interface CarDetail {
   id: string;
@@ -57,6 +58,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
   const [car, setCar] = useState<CarDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [selectedImage, setSelectedImage] = useState(0);
+  const { favoriteIds, toggleFavorite } = useFavorites();
 
   const fetchCar = useCallback(async (id: string) => {
     setLoading(true);
@@ -127,8 +129,11 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                   <Badge className="absolute top-4 left-4 bg-primary">Featured</Badge>
                 )}
                 <div className="absolute top-4 right-4 flex gap-2">
-                  <button className="p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors">
-                    <Heart className="h-5 w-5" />
+                  <button
+                    className="p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors"
+                    onClick={() => toggleFavorite(car.id)}
+                  >
+                    <Heart className={`h-5 w-5 ${favoriteIds.has(car.id) ? "fill-red-500 text-red-500" : ""}`} />
                   </button>
                   <button className="p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors">
                     <Share2 className="h-5 w-5" />

@@ -19,6 +19,7 @@ import {
   Star,
   Tag,
   FolderOpen,
+  MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
@@ -29,6 +30,7 @@ const navItems = [
   { label: "Cars", href: "/admin/cars", icon: Car },
   { label: "Brands", href: "/admin/brands", icon: Tag },
   { label: "Categories", href: "/admin/categories", icon: FolderOpen },
+  { label: "Locations", href: "/admin/locations", icon: MapPin },
   { label: "Bookings", href: "/admin/bookings", icon: CalendarDays },
   { label: "Customers", href: "/admin/customers", icon: Users },
   { label: "Reviews", href: "/admin/reviews", icon: Star },

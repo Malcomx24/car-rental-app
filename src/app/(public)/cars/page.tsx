@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/utils";
 import { Search, SlidersHorizontal, Star, Fuel, Users, Settings2, ChevronLeft, ChevronRight, Loader2, Heart, X } from "lucide-react";
+import { useFavorites } from "@/hooks/use-favorites";
 
 interface Car {
   id: string;
@@ -52,6 +53,7 @@ export default function CarsPage() {
   const [sort, setSort] = useState("newest");
   const [showFilters, setShowFilters] = useState(false);
   const [filters, setFilters] = useState<Filters>({ brands: [], categories: [] });
+  const { favoriteIds, toggleFavorite } = useFavorites();
 
   const fetchCars = useCallback(async () => {
     setLoading(true);
@@ -238,8 +240,11 @@ export default function CarsPage() {
                     {car.isFeatured && (
                       <Badge className="absolute top-3 left-3 bg-primary">Featured</Badge>
                     )}
-                    <button className="absolute top-3 right-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors" onClick={(e) => e.preventDefault()}>
-                      <Heart className="h-4 w-4" />
+                    <button
+                      className="absolute top-3 right-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors"
+                      onClick={(e) => { e.preventDefault(); toggleFavorite(car.id); }}
+                    >
+                      <Heart className={`h-4 w-4 ${favoriteIds.has(car.id) ? "fill-red-500 text-red-500" : ""}`} />
                     </button>
                   </div>
                   <CardContent className="p-5">

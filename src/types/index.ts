@@ -7,6 +7,9 @@ export type BookingStatus =
   | "COMPLETED"
   | "CANCELLED";
 
+export type PaymentStatus = "PENDING" | "AWAITING_TRANSFER" | "SUCCEEDED" | "FAILED" | "REFUNDED";
+export type PaymentMethod = "PAY_AT_PICKUP" | "BANK_TRANSFER";
+
 export type VehicleStatus =
   | "AVAILABLE"
   | "RESERVED"
@@ -98,8 +101,10 @@ export interface Payment {
   bookingId: string;
   amount: number;
   currency: string;
-  status: "SUCCEEDED" | "PENDING" | "FAILED" | "REFUNDED";
+  status: PaymentStatus;
+  paymentMethod: PaymentMethod | null;
   stripePaymentIntentId?: string;
+  description?: string;
   createdAt: string;
 }
 

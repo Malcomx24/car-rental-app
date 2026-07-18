@@ -86,7 +86,7 @@ export async function POST(request: NextRequest) {
     }
 
     const body = await request.json();
-    const { carId, pickupLocationId, dropoffLocationId, pickupDate, returnDate, extras, couponCode, notes } = body;
+    const { carId, pickupLocationId, dropoffLocationId, pickupDate, returnDate, extras, couponCode, notes, paymentMethod } = body;
 
     if (!carId || !pickupLocationId || !dropoffLocationId || !pickupDate || !returnDate) {
       return NextResponse.json({ success: false, error: "Missing required fields" }, { status: 400 });
@@ -136,6 +136,8 @@ export async function POST(request: NextRequest) {
         totalAmount,
         depositAmount: Number(car.securityDeposit) || 0,
         notes,
+        paymentMethod: paymentMethod === "BANK_TRANSFER" ? "BANK_TRANSFER" : "PAY_AT_PICKUP",
+        paymentStatus: paymentMethod === "BANK_TRANSFER" ? "AWAITING_TRANSFER" : "PENDING",
         extras: extras?.length
           ? {
               create: extras.map((e: { name: string; description?: string; pricePerDay: number; quantity?: number }) => ({
@@ -168,6 +170,7 @@ export async function POST(request: NextRequest) {
       userId: user.id,
       car: { name: booking.car.name, brand: { name: booking.car.brand.name } },
       pickupLocation: { name: booking.pickupLocation.name },
+      paymentMethod: booking.paymentMethod,
     }).catch(console.error);
 
     notifyAdminNewBooking({

@@ -6,6 +6,7 @@ import {
   notifyBookingCancelled,
   notifyBookingActive,
   notifyBookingCompleted,
+  notifyPaymentStatusChanged,
 } from "@/lib/notifications";
 
 interface RouteParams {
@@ -75,9 +76,8 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ success: false, error: "Forbidden" }, { status: 403 });
     }
 
-    const body = await request.json();
-
     // Customers can only cancel
+    const body = await request.json();
     if (!isAdmin) {
       if (body.status === "CANCELLED" && ["PENDING", "CONFIRMED"].includes(booking.status)) {
         const updated = await db.booking.update({
@@ -115,7 +115,57 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
       return NextResponse.json({ success: false, error: "Cannot modify this booking" }, { status: 403 });
     }
 
-    // Admin can update status
+    // Admin can update status or payment status
+
+    // Handle payment status updates (doesn't require booking status change)
+    if (body.paymentStatus) {
+      const { paymentStatus, paymentReference, paymentNotes } = body;
+
+      const updatedBooking = await db.booking.update({
+        where: { id },
+        data: {
+          paymentStatus,
+          ...(paymentReference !== undefined && { paymentReference }),
+          ...(paymentNotes !== undefined && { paymentNotes }),
+        },
+        include: {
+          car: { include: { brand: true, images: { where: { isPrimary: true }, take: 1 } } },
+          pickupLocation: true,
+          dropoffLocation: true,
+          extras: true,
+          payments: { orderBy: { createdAt: "desc" } },
+        },
+      });
+
+      if (paymentStatus === "SUCCEEDED") {
+        const existingPayment = await db.payment.findFirst({
+          where: { bookingId: id, status: "SUCCEEDED" },
+        });
+        if (!existingPayment) {
+          await db.payment.create({
+            data: {
+              bookingId: booking.id,
+              userId: booking.userId,
+              amount: booking.totalAmount,
+              currency: "USD",
+              status: "SUCCEEDED",
+              description: `Payment confirmed — ${booking.paymentMethod || "Pay at Pickup"}`,
+            },
+          });
+        }
+      }
+
+      notifyPaymentStatusChanged({
+        id: booking.id,
+        bookingNumber: booking.bookingNumber,
+        userId: booking.userId,
+        paymentStatus,
+      }).catch(console.error);
+
+      return NextResponse.json({ success: true, data: updatedBooking });
+    }
+
+    // Validate booking status update
     const validated = updateBookingStatusSchema.safeParse(body);
     if (!validated.success) {
       return NextResponse.json({ success: false, error: "Invalid data" }, { status: 400 });

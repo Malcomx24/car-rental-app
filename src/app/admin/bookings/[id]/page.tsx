@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { BookingStatusBadge } from "@/components/shared/booking-status-badge";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
 import { ArrowLeft, Loader2, MapPin, Calendar, Car, User, DollarSign, CheckCircle, XCircle, PlayCircle, Clock } from "lucide-react";
+import { toast } from "sonner";
 
 interface BookingDetail {
   id: string;
@@ -25,6 +26,10 @@ interface BookingDetail {
   totalAmount: number;
   depositAmount: number;
   status: string;
+  paymentMethod: string;
+  paymentStatus: string;
+  paymentReference: string | null;
+  paymentNotes: string | null;
   notes: string | null;
   cancellationReason: string | null;
   cancelledAt: string | null;
@@ -46,18 +51,39 @@ interface BookingDetail {
   user: { firstName: string; lastName: string; email: string; phone: string | null };
 }
 
+const paymentStatusConfig: Record<string, { label: string; className: string }> = {
+  PENDING: { label: "Pending", className: "bg-yellow-100 text-yellow-800" },
+  AWAITING_TRANSFER: { label: "Awaiting Transfer", className: "bg-blue-100 text-blue-800" },
+  SUCCEEDED: { label: "Paid", className: "bg-green-100 text-green-800" },
+  FAILED: { label: "Failed", className: "bg-red-100 text-red-800" },
+  REFUNDED: { label: "Refunded", className: "bg-purple-100 text-purple-800" },
+};
+
+const paymentMethodConfig: Record<string, string> = {
+  PAY_AT_PICKUP: "Pay at Pickup",
+  BANK_TRANSFER: "Bank Transfer",
+};
+
 export default function AdminBookingDetailPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
   const [booking, setBooking] = useState<BookingDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState(false);
+  const [paymentLoading, setPaymentLoading] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState("");
+  const [paymentReference, setPaymentReference] = useState("");
+  const [paymentNotes, setPaymentNotes] = useState("");
+  const [showPaymentActions, setShowPaymentActions] = useState(false);
 
   const fetchBooking = useCallback(async (id: string) => {
     setLoading(true);
     try {
       const res = await fetch(`/api/bookings/${id}`);
       const json = await res.json();
-      if (json.success) setBooking(json.data);
+      if (json.success) {
+        setBooking(json.data);
+        setPaymentStatus(json.data.paymentStatus);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -83,6 +109,34 @@ export default function AdminBookingDetailPage({ params }: { params: Promise<{ i
       console.error(err);
     } finally {
       setUpdating(false);
+    }
+  };
+
+  const updatePaymentStatus = async (newStatus: string) => {
+    if (!booking) return;
+    setPaymentLoading(true);
+    try {
+      const res = await fetch(`/api/bookings/${booking.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          paymentStatus: newStatus,
+          ...(paymentReference && { paymentReference }),
+          ...(paymentNotes && { paymentNotes }),
+        }),
+      });
+      if (res.ok) {
+        setPaymentStatus(newStatus);
+        setShowPaymentActions(false);
+        toast.success(`Payment status updated to ${newStatus.replace("_", " ").toLowerCase()}`);
+        window.location.reload();
+      } else {
+        toast.error("Failed to update payment status");
+      }
+    } catch {
+      toast.error("Failed to update payment status");
+    } finally {
+      setPaymentLoading(false);
     }
   };
 
@@ -275,6 +329,111 @@ export default function AdminBookingDetailPage({ params }: { params: Promise<{ i
               )}
             </CardContent>
           </Card>
+
+          {/* Payment Status & Actions */}
+          <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="p-6 border-b border-gray-100">
+              <div className="flex items-center justify-between">
+                <h2 className="font-semibold text-lg">Payment</h2>
+                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${paymentStatusConfig[paymentStatus]?.className || ""}`}>
+                  {paymentStatusConfig[paymentStatus]?.label || paymentStatus}
+                </span>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="space-y-3">
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Method</span>
+                  <span className="font-medium">{paymentMethodConfig[booking.paymentMethod] || "Pay at Pickup"}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span className="text-gray-500">Amount</span>
+                  <span className="font-medium">{formatCurrency(Number(booking.totalAmount))}</span>
+                </div>
+                {booking.paymentReference && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-gray-500">Reference</span>
+                    <span className="font-medium">{booking.paymentReference}</span>
+                  </div>
+                )}
+                {booking.paymentNotes && (
+                  <div className="text-sm">
+                    <span className="text-gray-500">Notes</span>
+                    <p className="mt-1">{booking.paymentNotes}</p>
+                  </div>
+                )}
+              </div>
+
+              {/* Action Buttons */}
+              <div className="mt-6 space-y-3">
+                {paymentStatus === "PENDING" && (
+                  <>
+                    <button
+                      onClick={() => updatePaymentStatus("SUCCEEDED")}
+                      disabled={paymentLoading}
+                      className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium"
+                    >
+                      Mark as Paid
+                    </button>
+                    <button
+                      onClick={() => updatePaymentStatus("FAILED")}
+                      disabled={paymentLoading}
+                      className="w-full px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 disabled:opacity-50 text-sm font-medium"
+                    >
+                      Mark as Failed
+                    </button>
+                  </>
+                )}
+                {paymentStatus === "AWAITING_TRANSFER" && (
+                  <>
+                    <button
+                      onClick={() => updatePaymentStatus("SUCCEEDED")}
+                      disabled={paymentLoading}
+                      className="w-full px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 text-sm font-medium"
+                    >
+                      Confirm Transfer Received
+                    </button>
+                    <button
+                      onClick={() => updatePaymentStatus("FAILED")}
+                      disabled={paymentLoading}
+                      className="w-full px-4 py-2 bg-red-100 text-red-700 rounded-lg hover:bg-red-200 disabled:opacity-50 text-sm font-medium"
+                    >
+                      Mark Transfer Failed
+                    </button>
+                  </>
+                )}
+                {paymentStatus === "SUCCEEDED" && (
+                  <button
+                    onClick={() => updatePaymentStatus("REFUNDED")}
+                    disabled={paymentLoading}
+                    className="w-full px-4 py-2 bg-purple-100 text-purple-700 rounded-lg hover:bg-purple-200 disabled:opacity-50 text-sm font-medium"
+                  >
+                    Issue Refund
+                  </button>
+                )}
+              </div>
+
+              {/* Optional: Add Reference/Notes */}
+              {(paymentStatus === "AWAITING_TRANSFER" || paymentStatus === "PENDING") && (
+                <div className="mt-4 space-y-3">
+                  <input
+                    type="text"
+                    placeholder="Payment reference (optional)"
+                    value={paymentReference}
+                    onChange={(e) => setPaymentReference(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                  />
+                  <textarea
+                    placeholder="Notes (optional)"
+                    value={paymentNotes}
+                    onChange={(e) => setPaymentNotes(e.target.value)}
+                    rows={2}
+                    className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm resize-none"
+                  />
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>

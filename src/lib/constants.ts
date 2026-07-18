@@ -114,6 +114,19 @@ export const BOOKING_STATUSES = [
   "CANCELLED",
 ] as const;
 
+export const PAYMENT_METHODS = [
+  { value: "PAY_AT_PICKUP", label: "Pay at Pickup", description: "Pay when collecting your vehicle" },
+  { value: "BANK_TRANSFER", label: "Bank Transfer", description: "Transfer payment manually" },
+] as const;
+
+export const PAYMENT_STATUSES = [
+  "PENDING",
+  "AWAITING_TRANSFER",
+  "SUCCEEDED",
+  "FAILED",
+  "REFUNDED",
+] as const;
+
 export const VEHICLE_STATUSES = [
   "AVAILABLE",
   "RESERVED",

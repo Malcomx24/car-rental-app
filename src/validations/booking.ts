@@ -18,6 +18,7 @@ export const createBookingSchema = z.object({
     .default([]),
   couponCode: z.string().optional(),
   notes: z.string().optional(),
+  paymentMethod: z.enum(["PAY_AT_PICKUP", "BANK_TRANSFER"]).default("PAY_AT_PICKUP"),
 });
 
 export type CreateBookingData = z.infer<typeof createBookingSchema>;
@@ -35,4 +36,10 @@ export const bookingSearchSchema = z.object({
 export const updateBookingStatusSchema = z.object({
   status: z.enum(["PENDING", "CONFIRMED", "ACTIVE", "COMPLETED", "CANCELLED"]),
   cancellationReason: z.string().optional(),
+});
+
+export const updatePaymentStatusSchema = z.object({
+  paymentStatus: z.enum(["PENDING", "AWAITING_TRANSFER", "SUCCEEDED", "FAILED", "REFUNDED"]),
+  paymentReference: z.string().optional(),
+  paymentNotes: z.string().optional(),
 });

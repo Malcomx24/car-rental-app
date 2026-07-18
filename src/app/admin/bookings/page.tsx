@@ -19,6 +19,8 @@ interface AdminBookingItem {
   totalDays: number;
   totalAmount: number;
   status: string;
+  paymentMethod: string;
+  paymentStatus: string;
   createdAt: string;
   car: {
     id: string;
@@ -31,6 +33,19 @@ interface AdminBookingItem {
   user: { firstName: string; lastName: string; email: string };
 }
 
+const paymentStatusConfig: Record<string, { label: string; className: string }> = {
+  PENDING: { label: "Pending", className: "bg-yellow-100 text-yellow-800" },
+  AWAITING_TRANSFER: { label: "Awaiting Transfer", className: "bg-blue-100 text-blue-800" },
+  SUCCEEDED: { label: "Paid", className: "bg-green-100 text-green-800" },
+  FAILED: { label: "Failed", className: "bg-red-100 text-red-800" },
+  REFUNDED: { label: "Refunded", className: "bg-purple-100 text-purple-800" },
+};
+
+const paymentMethodConfig: Record<string, string> = {
+  PAY_AT_PICKUP: "Pay at Pickup",
+  BANK_TRANSFER: "Bank Transfer",
+};
+
 const STATUS_FILTERS = ["", "PENDING", "CONFIRMED", "ACTIVE", "COMPLETED", "CANCELLED"];
 
 export default function AdminBookingsPage() {
@@ -42,6 +57,8 @@ export default function AdminBookingsPage() {
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("");
+  const [paymentMethodFilter, setPaymentMethodFilter] = useState<string>("all");
+  const [paymentStatusFilter, setPaymentStatusFilter] = useState<string>("all");
   const [updating, setUpdating] = useState<string | null>(null);
 
   const fetchBookings = useCallback(async () => {
@@ -50,6 +67,8 @@ export default function AdminBookingsPage() {
       const params = new URLSearchParams();
       if (search) params.set("search", search);
       if (statusFilter) params.set("status", statusFilter);
+      if (paymentMethodFilter !== "all") params.set("paymentMethod", paymentMethodFilter);
+      if (paymentStatusFilter !== "all") params.set("paymentStatus", paymentStatusFilter);
       params.set("page", String(page));
       params.set("limit", "12");
 
@@ -65,14 +84,14 @@ export default function AdminBookingsPage() {
     } finally {
       setLoading(false);
     }
-  }, [search, statusFilter, page]);
+  }, [search, statusFilter, paymentMethodFilter, paymentStatusFilter, page]);
 
   useEffect(() => { fetchBookings(); }, [fetchBookings]);
 
   useEffect(() => {
     const timer = setTimeout(() => setPage(1), 300);
     return () => clearTimeout(timer);
-  }, [search, statusFilter]);
+  }, [search, statusFilter, paymentMethodFilter, paymentStatusFilter]);
 
   const updateStatus = async (id: string, status: string, reason?: string) => {
     setUpdating(id);
@@ -122,6 +141,31 @@ export default function AdminBookingsPage() {
         />
       </div>
 
+      {/* Payment Filters */}
+      <div className="flex flex-wrap gap-3">
+        <select
+          value={paymentMethodFilter}
+          onChange={(e) => setPaymentMethodFilter(e.target.value)}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
+        >
+          <option value="all">All Payment Methods</option>
+          <option value="PAY_AT_PICKUP">Pay at Pickup</option>
+          <option value="BANK_TRANSFER">Bank Transfer</option>
+        </select>
+        <select
+          value={paymentStatusFilter}
+          onChange={(e) => setPaymentStatusFilter(e.target.value)}
+          className="px-3 py-2 border border-gray-200 rounded-lg text-sm bg-white"
+        >
+          <option value="all">All Payment Statuses</option>
+          <option value="PENDING">Pending</option>
+          <option value="AWAITING_TRANSFER">Awaiting Transfer</option>
+          <option value="SUCCEEDED">Succeeded</option>
+          <option value="FAILED">Failed</option>
+          <option value="REFUNDED">Refunded</option>
+        </select>
+      </div>
+
       {/* Bookings Table */}
       <Card>
         <CardContent className="p-0">
@@ -134,14 +178,16 @@ export default function AdminBookingsPage() {
                   <th className="text-left p-4 text-sm font-medium hidden lg:table-cell">Dates</th>
                   <th className="text-left p-4 text-sm font-medium">Amount</th>
                   <th className="text-left p-4 text-sm font-medium">Status</th>
+                  <th className="text-left p-4 text-sm font-medium">Payment Method</th>
+                  <th className="text-left p-4 text-sm font-medium">Payment Status</th>
                   <th className="text-right p-4 text-sm font-medium">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {loading ? (
-                  <tr><td colSpan={6} className="p-8 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" /></td></tr>
+                  <tr><td colSpan={8} className="p-8 text-center"><Loader2 className="h-6 w-6 animate-spin mx-auto text-muted-foreground" /></td></tr>
                 ) : bookings.length === 0 ? (
-                  <tr><td colSpan={6} className="p-8 text-center text-muted-foreground">No bookings found</td></tr>
+                  <tr><td colSpan={8} className="p-8 text-center text-muted-foreground">No bookings found</td></tr>
                 ) : (
                   bookings.map((b) => (
                     <tr key={b.id} className="border-b last:border-0 hover:bg-muted/30 transition-colors">
@@ -173,6 +219,14 @@ export default function AdminBookingsPage() {
                       </td>
                       <td className="p-4">
                         <BookingStatusBadge status={b.status} />
+                      </td>
+                      <td className="p-4">
+                        <span className="text-sm text-gray-600">{paymentMethodConfig[b.paymentMethod] || "Pay at Pickup"}</span>
+                      </td>
+                      <td className="p-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${paymentStatusConfig[b.paymentStatus]?.className || ""}`}>
+                          {paymentStatusConfig[b.paymentStatus]?.label || b.paymentStatus}
+                        </span>
                       </td>
                       <td className="p-4 text-right">
                         <DropdownMenu>

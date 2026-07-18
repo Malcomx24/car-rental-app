@@ -201,3 +201,116 @@ export function adminNewBookingEmail(data: {
     </div></body></html>
   `;
 }
+
+export function bankTransferConfirmationEmail(data: {
+  customerName: string;
+  bookingNumber: string;
+  carName: string;
+  pickupDate: string;
+  returnDate: string;
+  pickupLocation: string;
+  totalAmount: number;
+  bankName: string;
+  accountHolder: string;
+  iban: string;
+  swiftCode?: string;
+  instructions?: string;
+  dashboardUrl: string;
+}) {
+  return `
+    <!DOCTYPE html><html><head>${BASE_STYLE}</head><body>
+    <div class="container">
+      <div class="header" style="background:linear-gradient(135deg,#2563eb,#1d4ed8);"><h1>Bank Transfer Instructions</h1></div>
+      <div class="content">
+        <p>Hi ${data.customerName},</p>
+        <p>Your booking <strong>#${data.bookingNumber}</strong> has been received. Please complete your payment using bank transfer.</p>
+        <div style="background:#f9fafb;border-radius:8px;padding:16px;margin:16px 0;">
+          <div class="detail-row"><span class="detail-label">Booking Number</span><span class="detail-value">#${data.bookingNumber}</span></div>
+          <div class="detail-row"><span class="detail-label">Vehicle</span><span class="detail-value">${data.carName}</span></div>
+          <div class="detail-row"><span class="detail-label">Pickup</span><span class="detail-value">${formatDate(data.pickupDate)}</span></div>
+          <div class="detail-row"><span class="detail-label">Return</span><span class="detail-value">${formatDate(data.returnDate)}</span></div>
+          <div class="detail-row"><span class="detail-label">Pickup Location</span><span class="detail-value">${data.pickupLocation}</span></div>
+          <div class="detail-row" style="border-bottom:none;"><span class="detail-label">Amount to Transfer</span><span class="detail-value" style="color:#2563eb;font-size:18px;">${formatCurrency(data.totalAmount)}</span></div>
+        </div>
+        <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:8px;padding:16px;margin:16px 0;">
+          <p style="margin:0 0 8px 0;font-weight:600;color:#1e40af;">Bank Details</p>
+          <div class="detail-row"><span class="detail-label">Bank Name</span><span class="detail-value">${data.bankName}</span></div>
+          <div class="detail-row"><span class="detail-label">Account Holder</span><span class="detail-value">${data.accountHolder}</span></div>
+          <div class="detail-row"><span class="detail-label">IBAN / RIB</span><span class="detail-value">${data.iban}</span></div>
+          ${data.swiftCode ? `<div class="detail-row"><span class="detail-label">Swift Code</span><span class="detail-value">${data.swiftCode}</span></div>` : ""}
+          <div class="detail-row" style="border-bottom:none;"><span class="detail-label">Reference</span><span class="detail-value">${data.bookingNumber}</span></div>
+        </div>
+        ${data.instructions ? `<div style="background:#fef3c7;border:1px solid #fde68a;border-radius:8px;padding:16px;margin:16px 0;"><p style="margin:0 0 8px 0;font-weight:600;color:#92400e;">Instructions</p><p style="margin:0;color:#92400e;font-size:14px;">${data.instructions}</p></div>` : ""}
+        <p style="text-align:center;margin:24px 0;"><a href="${data.dashboardUrl}" class="btn" style="background:#2563eb;">View Booking Details</a></p>
+        <p style="color:#6b7280;font-size:14px;">Please include your booking number <strong>#${data.bookingNumber}</strong> as the transfer reference. Your booking will be confirmed once payment is verified.</p>
+      </div>
+      <div class="footer"><p>DriveRent &copy; ${new Date().getFullYear()} &middot; Premium Car Rental</p></div>
+    </div></body></html>
+  `;
+}
+
+export function payAtPickupConfirmationEmail(data: {
+  customerName: string;
+  bookingNumber: string;
+  carName: string;
+  pickupDate: string;
+  pickupLocation: string;
+  totalAmount: number;
+  dashboardUrl: string;
+}) {
+  return `
+    <!DOCTYPE html><html><head>${BASE_STYLE}</head><body>
+    <div class="container">
+      <div class="header"><h1>Booking Confirmed — Pay at Pickup</h1></div>
+      <div class="content">
+        <p>Hi ${data.customerName},</p>
+        <p>Your booking <strong>#${data.bookingNumber}</strong> has been confirmed! You will pay when collecting your vehicle.</p>
+        <div style="background:#f9fafb;border-radius:8px;padding:16px;margin:16px 0;">
+          <div class="detail-row"><span class="detail-label">Booking Number</span><span class="detail-value">#${data.bookingNumber}</span></div>
+          <div class="detail-row"><span class="detail-label">Vehicle</span><span class="detail-value">${data.carName}</span></div>
+          <div class="detail-row"><span class="detail-label">Pickup Date</span><span class="detail-value">${formatDate(data.pickupDate)}</span></div>
+          <div class="detail-row"><span class="detail-label">Pickup Location</span><span class="detail-value">${data.pickupLocation}</span></div>
+          <div class="detail-row" style="border-bottom:none;"><span class="detail-label">Amount Due at Pickup</span><span class="detail-value" style="color:#7c3aed;font-size:18px;">${formatCurrency(data.totalAmount)}</span></div>
+        </div>
+        <p style="text-align:center;margin:24px 0;"><a href="${data.dashboardUrl}" class="btn">View Booking Details</a></p>
+        <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:16px;margin:16px 0;">
+          <p style="margin:0;color:#166534;font-size:14px;"><strong>What to bring:</strong> Valid driver's license, ID, and a payment method (credit/debit card or cash).</p>
+        </div>
+      </div>
+      <div class="footer"><p>DriveRent &copy; ${new Date().getFullYear()} &middot; Premium Car Rental</p></div>
+    </div></body></html>
+  `;
+}
+
+export function paymentStatusUpdateEmail(data: {
+  customerName: string;
+  bookingNumber: string;
+  paymentStatus: string;
+  amount: number;
+  dashboardUrl: string;
+}) {
+  const statusMessages: Record<string, { title: string; color: string; bg: string; message: string }> = {
+    SUCCEEDED: { title: "Payment Confirmed", color: "#059669", bg: "#d1fae5", message: "Your payment has been received and confirmed. Thank you!" },
+    FAILED: { title: "Payment Failed", color: "#dc2626", bg: "#fee2e2", message: "Unfortunately, your payment could not be processed. Please try again or contact support." },
+    AWAITING_TRANSFER: { title: "Awaiting Transfer", color: "#2563eb", bg: "#eff6ff", message: "Your bank transfer is being processed. We will confirm once payment is received." },
+    REFUNDED: { title: "Payment Refunded", color: "#7c3aed", bg: "#ede9fe", message: "Your payment has been refunded. It may take 3-5 business days to appear in your account." },
+  };
+  const s = statusMessages[data.paymentStatus] || statusMessages.SUCCEEDED;
+  return `
+    <!DOCTYPE html><html><head>${BASE_STYLE}</head><body>
+    <div class="container">
+      <div class="header" style="background:linear-gradient(135deg,${s.color},${s.color});"><h1>${s.title}</h1></div>
+      <div class="content">
+        <p>Hi ${data.customerName},</p>
+        <p>${s.message}</p>
+        <div style="background:#f9fafb;border-radius:8px;padding:16px;margin:16px 0;">
+          <div class="detail-row"><span class="detail-label">Booking</span><span class="detail-value">#${data.bookingNumber}</span></div>
+          <div class="detail-row"><span class="detail-label">Amount</span><span class="detail-value">${formatCurrency(data.amount)}</span></div>
+          <div class="detail-row" style="border-bottom:none;"><span class="detail-label">Status</span><span class="detail-value">${data.paymentStatus.replace("_", " ")}</span></div>
+        </div>
+        <p style="text-align:center;margin:24px 0;"><a href="${data.dashboardUrl}" class="btn" style="background:${s.color};">View Booking Details</a></p>
+      </div>
+      <div class="footer"><p>DriveRent &copy; ${new Date().getFullYear()} &middot; Premium Car Rental</p></div>
+    </div></body></html>
+  `;
+}

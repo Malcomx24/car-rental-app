@@ -9,6 +9,9 @@ import {
   bookingReminderEmail,
   reviewRequestEmail,
   adminNewBookingEmail,
+  bankTransferConfirmationEmail,
+  payAtPickupConfirmationEmail,
+  paymentStatusUpdateEmail,
 } from "./email-templates";
 
 export type NotificationType = "INFO" | "SUCCESS" | "WARNING" | "ERROR";
@@ -83,6 +86,7 @@ export async function notifyBookingConfirmed(booking: {
   userId: string;
   car: { name: string; brand: { name: string } };
   pickupLocation: { name: string };
+  paymentMethod?: string | null;
 }) {
   const user = await db.user.findUnique({ where: { id: booking.userId } });
   if (!user) return;
@@ -100,16 +104,29 @@ export async function notifyBookingConfirmed(booking: {
     sendEmail: true,
     email: user.email,
     emailSubject: `DriveRent — Booking #${booking.bookingNumber} Confirmed`,
-    emailHtml: bookingConfirmationEmail({
-      customerName: user.firstName,
-      bookingNumber: booking.bookingNumber,
-      carName,
-      pickupDate: booking.pickupDate.toISOString(),
-      returnDate: booking.returnDate.toISOString(),
-      pickupLocation: booking.pickupLocation.name,
-      totalAmount: Number(booking.totalAmount),
-      dashboardUrl,
-    }),
+    emailHtml: booking.paymentMethod === "BANK_TRANSFER"
+      ? bankTransferConfirmationEmail({
+          customerName: user.firstName,
+          bookingNumber: booking.bookingNumber,
+          carName,
+          pickupDate: booking.pickupDate.toISOString(),
+          returnDate: booking.returnDate.toISOString(),
+          pickupLocation: booking.pickupLocation.name,
+          totalAmount: Number(booking.totalAmount),
+          bankName: "DriveRent Bank",
+          accountHolder: "DriveRent LLC",
+          iban: "US12 3456 7890 1234 5678 90",
+          dashboardUrl,
+        })
+      : payAtPickupConfirmationEmail({
+          customerName: user.firstName,
+          bookingNumber: booking.bookingNumber,
+          carName,
+          pickupDate: booking.pickupDate.toISOString(),
+          pickupLocation: booking.pickupLocation.name,
+          totalAmount: Number(booking.totalAmount),
+          dashboardUrl,
+        }),
   });
 }
 
@@ -274,4 +291,40 @@ export async function notifyAdminNewBooking(booking: {
       prefKey: "admin",
     });
   }
+}
+
+export async function notifyPaymentStatusChanged(booking: {
+  id: string;
+  bookingNumber: string;
+  userId: string;
+  paymentStatus: string;
+}) {
+  const user = await db.user.findUnique({ where: { id: booking.userId } });
+  if (!user) return;
+
+  const statusLabels: Record<string, string> = {
+    SUCCEEDED: "confirmed",
+    FAILED: "failed",
+    AWAITING_TRANSFER: "awaiting transfer",
+    REFUNDED: "refunded",
+  };
+
+  await createNotification({
+    userId: user.id,
+    title: `Payment ${statusLabels[booking.paymentStatus] || booking.paymentStatus}`,
+    message: `Your payment for booking #${booking.bookingNumber} has been ${statusLabels[booking.paymentStatus] || booking.paymentStatus}.`,
+    type: booking.paymentStatus === "SUCCEEDED" ? "SUCCESS" : booking.paymentStatus === "FAILED" ? "ERROR" : "INFO",
+    link: `${APP_URL}/dashboard/bookings/${booking.id}`,
+    prefKey: "payment",
+    sendEmail: true,
+    email: user.email,
+    emailSubject: `DriveRent — Payment Update for #${booking.bookingNumber}`,
+    emailHtml: paymentStatusUpdateEmail({
+      customerName: user.firstName,
+      bookingNumber: booking.bookingNumber,
+      paymentStatus: booking.paymentStatus,
+      amount: 0,
+      dashboardUrl: `${APP_URL}/dashboard/bookings/${booking.id}`,
+    }),
+  });
 }

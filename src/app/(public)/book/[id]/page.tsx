@@ -14,7 +14,6 @@ import {
   ArrowLeft, ArrowRight, Calendar, MapPin, Shield, CreditCard,
   CheckCircle, Loader2, Car, Info, ChevronRight,
 } from "lucide-react";
-import { PaymentForm } from "@/components/shared/payment-form";
 
 interface CarInfo {
   id: string;
@@ -72,6 +71,7 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
   const [checkingAvailability, setCheckingAvailability] = useState(false);
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"PAY_AT_PICKUP" | "BANK_TRANSFER">("PAY_AT_PICKUP");
 
   useEffect(() => {
     params.then(async ({ id }) => {
@@ -152,6 +152,7 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
             return { name: extra.name, description: extra.description, pricePerDay: extra.pricePerDay, quantity: 1 };
           }),
           notes,
+          paymentMethod: selectedPaymentMethod,
         }),
       });
 
@@ -420,21 +421,74 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
             )}
 
             {/* Step 3: Payment */}
-            {step === 3 && clientSecret && (
-              <Card>
-                <CardContent className="p-6 space-y-5">
-                  <h2 className="text-xl font-semibold flex items-center gap-2"><CreditCard className="h-5 w-5" /> Payment</h2>
-                  <p className="text-sm text-muted-foreground">Complete your booking by entering your payment details below.</p>
-                  <PaymentForm
-                    clientSecret={clientSecret}
-                    bookingId={createdBookingId!}
-                    amount={getTotal()}
-                    onSuccess={() => {
-                      router.push(`/dashboard/bookings/${createdBookingId}?paid=true`);
-                    }}
-                  />
-                </CardContent>
-              </Card>
+            {step === 3 && (
+              <div className="space-y-4">
+                <h3 className="font-semibold text-lg">Payment Method</h3>
+                <p className="text-sm text-gray-500">Choose how you'd like to pay for this booking.</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPaymentMethod("PAY_AT_PICKUP")}
+                    className={`relative p-6 rounded-xl border-2 text-left transition-all hover:shadow-md ${
+                      selectedPaymentMethod === "PAY_AT_PICKUP"
+                        ? "border-blue-600 bg-blue-50 ring-1 ring-blue-600"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        selectedPaymentMethod === "PAY_AT_PICKUP" ? "border-blue-600" : "border-gray-300"
+                      }`}>
+                        {selectedPaymentMethod === "PAY_AT_PICKUP" && <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-sm">Pay at Pickup</div>
+                        <p className="text-xs text-gray-500 mt-1">Pay when collecting your vehicle at the rental counter.</p>
+                      </div>
+                    </div>
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => setSelectedPaymentMethod("BANK_TRANSFER")}
+                    className={`relative p-6 rounded-xl border-2 text-left transition-all hover:shadow-md ${
+                      selectedPaymentMethod === "BANK_TRANSFER"
+                        ? "border-blue-600 bg-blue-50 ring-1 ring-blue-600"
+                        : "border-gray-200 hover:border-gray-300"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                        selectedPaymentMethod === "BANK_TRANSFER" ? "border-blue-600" : "border-gray-300"
+                      }`}>
+                        {selectedPaymentMethod === "BANK_TRANSFER" && <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
+                      </div>
+                      <div>
+                        <div className="font-semibold text-sm">Bank Transfer</div>
+                        <p className="text-xs text-gray-500 mt-1">Transfer payment manually. Bank details will be provided after booking.</p>
+                      </div>
+                    </div>
+                  </button>
+                </div>
+
+                {selectedPaymentMethod === "BANK_TRANSFER" && (
+                  <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+                    <p className="text-sm text-amber-800">
+                      After submitting your booking, you will receive bank transfer instructions via email.
+                      Please complete the transfer within 24 hours to secure your booking.
+                    </p>
+                  </div>
+                )}
+
+                {selectedPaymentMethod === "PAY_AT_PICKUP" && (
+                  <div className="mt-4 p-4 bg-green-50 border border-green-200 rounded-lg">
+                    <p className="text-sm text-green-800">
+                      No payment required now. You will pay at the rental counter when collecting your vehicle.
+                      Please bring a valid payment method (credit/debit card or cash).
+                    </p>
+                  </div>
+                )}
+              </div>
             )}
             {step < 3 && (
             <div className="flex justify-between mt-6">

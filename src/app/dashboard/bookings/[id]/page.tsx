@@ -27,6 +27,9 @@ interface BookingDetail {
   totalAmount: number;
   depositAmount: number;
   status: string;
+  paymentMethod: string | null;
+  paymentStatus: string | null;
+  paymentReference: string | null;
   notes: string | null;
   cancellationReason: string | null;
   cancelledAt: string | null;
@@ -77,6 +80,14 @@ export default function DashboardBookingDetailPage({ params }: { params: Promise
       body: JSON.stringify({ status: "CANCELLED", cancellationReason: "Cancelled by customer" }),
     });
     if (res.ok) fetchBooking(booking.id);
+  };
+
+  const paymentStatusConfig: Record<string, { label: string; className: string }> = {
+    PENDING: { label: "Pending", className: "bg-yellow-100 text-yellow-800" },
+    AWAITING_TRANSFER: { label: "Awaiting Transfer", className: "bg-blue-100 text-blue-800" },
+    SUCCEEDED: { label: "Paid", className: "bg-green-100 text-green-800" },
+    FAILED: { label: "Failed", className: "bg-red-100 text-red-800" },
+    REFUNDED: { label: "Refunded", className: "bg-purple-100 text-purple-800" },
   };
 
   if (loading) {
@@ -197,6 +208,42 @@ export default function DashboardBookingDetailPage({ params }: { params: Promise
           </div>
         </CardContent>
       </Card>
+
+      {/* Payment Method Info */}
+      <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6 mb-6">
+        <h3 className="font-semibold text-lg mb-4">Payment Details</h3>
+        <div className="space-y-3">
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Payment Method</span>
+            <span className="font-medium">
+              {booking.paymentMethod === "BANK_TRANSFER" ? "Bank Transfer" : booking.paymentMethod === "PAY_AT_PICKUP" ? "Pay at Pickup" : "Pay at Pickup"}
+            </span>
+          </div>
+          <div className="flex justify-between text-sm">
+            <span className="text-gray-500">Payment Status</span>
+            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
+              paymentStatusConfig[booking.paymentStatus ?? ""]?.className || "bg-gray-100 text-gray-800"
+            }`}>
+              {paymentStatusConfig[booking.paymentStatus ?? ""]?.label || booking.paymentStatus}
+            </span>
+          </div>
+          {booking.paymentReference && (
+            <div className="flex justify-between text-sm">
+              <span className="text-gray-500">Reference</span>
+              <span className="font-medium">{booking.paymentReference}</span>
+            </div>
+          )}
+          {booking.paymentStatus === "AWAITING_TRANSFER" && (
+            <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <p className="text-sm text-blue-800 font-medium mb-2">Bank Transfer Instructions</p>
+              <p className="text-sm text-blue-700">
+                Please transfer the amount to the bank account provided in your confirmation email.
+                Include your booking number <strong>#{booking.bookingNumber}</strong> as the reference.
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
 
       {/* Cancellation Info */}
       {booking.status === "CANCELLED" && booking.cancellationReason && (

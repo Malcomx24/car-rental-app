@@ -13,6 +13,7 @@ const publicRoutes = [
   "/api/cars",
   "/api/cars/(.*)",
   "/api/cars/filters",
+  "/api/locations",
   "/api/webhooks/(.*)",
 ];
 

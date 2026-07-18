@@ -2,12 +2,14 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useSignIn } from "@clerk/nextjs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 
 export default function ResetPasswordPage() {
+  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [code, setCode] = useState("");
@@ -63,7 +65,7 @@ export default function ResetPasswordPage() {
 
       if (result.status === "complete") {
         await setActive({ session: result.createdSessionId });
-        setSuccess(true);
+        router.replace("/dashboard");
       } else {
         setError("Unexpected result. Please try again.");
       }

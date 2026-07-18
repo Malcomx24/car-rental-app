@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
+import { useSession } from "@clerk/nextjs";
 import type { UserRole } from "@prisma/client";
 
 interface UserProfile {
@@ -14,51 +15,44 @@ interface UserProfile {
 }
 
 export function useAuth() {
-  const [isLoaded, setIsLoaded] = useState(false);
-  const [isSignedIn, setIsSignedIn] = useState(false);
+  const { session, isLoaded: sessionLoaded } = useSession();
   const [profile, setProfile] = useState<UserProfile | null>(null);
+  const [profileLoaded, setProfileLoaded] = useState(false);
 
-  useEffect(() => {
-    let active = true;
-    const timeout = setTimeout(() => {
-      if (active) {
-        setIsLoaded(true);
-        setIsSignedIn(false);
+  const isSignedIn = !!session;
+
+  const fetchProfile = useCallback(async () => {
+    try {
+      const res = await fetch("/api/user/profile");
+      if (res.ok) {
+        const data = await res.json();
+        setProfile(data?.user ?? null);
+      } else {
+        setProfile(null);
       }
-    }, 10000);
-
-    fetch("/api/user/profile")
-      .then((res) => {
-        if (res.ok) return res.json();
-        return null;
-      })
-      .then((data) => {
-        if (active) {
-          clearTimeout(timeout);
-          setIsLoaded(true);
-          setIsSignedIn(!!data?.user);
-          setProfile(data?.user ?? null);
-        }
-      })
-      .catch(() => {
-        if (active) {
-          clearTimeout(timeout);
-          setIsLoaded(true);
-          setIsSignedIn(false);
-        }
-      });
-
-    return () => {
-      active = false;
-      clearTimeout(timeout);
-    };
+    } catch {
+      setProfile(null);
+    } finally {
+      setProfileLoaded(true);
+    }
   }, []);
 
+  useEffect(() => {
+    if (!sessionLoaded) return;
+
+    if (session) {
+      fetchProfile();
+    } else {
+      setProfile(null);
+      setProfileLoaded(true);
+    }
+  }, [sessionLoaded, session, fetchProfile]);
+
   return {
-    isLoaded,
+    isLoaded: sessionLoaded && profileLoaded,
     isSignedIn,
     profile,
-    isLoading: !isLoaded,
+    isLoading: !sessionLoaded || !profileLoaded,
     role: profile?.role,
   };
 }

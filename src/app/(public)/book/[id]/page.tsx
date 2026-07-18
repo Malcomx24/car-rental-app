@@ -50,7 +50,7 @@ interface BookingResult {
   totalAmount: number;
 }
 
-const STEPS = ["Dates", "Extras", "Review", "Payment"];
+const STEPS = ["Dates", "Extras", "Payment", "Review"];
 
 export default function BookingFlowPage({ params }: { params: Promise<{ id: string }> }) {
   const router = useRouter();
@@ -69,8 +69,6 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
   const [notes, setNotes] = useState("");
   const [availability, setAvailability] = useState<AvailabilityResult | null>(null);
   const [checkingAvailability, setCheckingAvailability] = useState(false);
-  const [clientSecret, setClientSecret] = useState<string | null>(null);
-  const [createdBookingId, setCreatedBookingId] = useState<string | null>(null);
   const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"PAY_AT_PICKUP" | "BANK_TRANSFER">("PAY_AT_PICKUP");
 
   useEffect(() => {
@@ -135,7 +133,7 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
   };
 
   const handleBook = async () => {
-    if (!car || !availability || createdBookingId) return;
+    if (!car || !availability) return;
     setSubmitting(true);
     try {
       const res = await fetch("/api/bookings", {
@@ -159,20 +157,7 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
       if (res.ok) {
         const json = await res.json();
         const booking: BookingResult = json.data;
-        setCreatedBookingId(booking.id);
-
-        const payRes = await fetch("/api/payments/intent", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ bookingId: booking.id }),
-        });
-        const payJson = await payRes.json();
-        if (payJson.success) {
-          setClientSecret(payJson.data.clientSecret);
-          setStep(3);
-        } else {
-          router.push(`/dashboard/bookings/${booking.id}?booked=true`);
-        }
+        router.push(`/dashboard/bookings/${booking.id}?booked=true`);
       } else {
         const err = await res.json();
         alert(err.error || "Failed to create booking");
@@ -352,76 +337,8 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
               </Card>
             )}
 
-            {/* Step 2: Review */}
+            {/* Step 2: Payment Method */}
             {step === 2 && (
-              <Card>
-                <CardContent className="p-6 space-y-5">
-                  <h2 className="text-xl font-semibold">Review Your Booking</h2>
-
-                  {/* Car Summary */}
-                  <div className="flex gap-4 p-4 rounded-xl bg-muted/50">
-                    <div className="h-20 w-28 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                      {car.images[0] ? (
-                        <img src={car.images[0].url} alt={car.name} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center"><Car className="h-6 w-6 text-muted-foreground" /></div>
-                      )}
-                    </div>
-                    <div>
-                      <p className="font-semibold">{car.brand.name} {car.name}</p>
-                      <p className="text-sm text-muted-foreground">{car.year} &middot; {car.category.name}</p>
-                    </div>
-                  </div>
-
-                  {/* Dates */}
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
-                      <p className="text-muted-foreground">Pickup</p>
-                      <p className="font-medium">{pickupDate ? formatDate(pickupDate) : "N/A"}</p>
-                      <p className="text-xs text-muted-foreground">{locations.find((l) => l.id === pickupLocationId)?.name}</p>
-                    </div>
-                    <div>
-                      <p className="text-muted-foreground">Return</p>
-                      <p className="font-medium">{returnDate ? formatDate(returnDate) : "N/A"}</p>
-                      <p className="text-xs text-muted-foreground">{locations.find((l) => l.id === dropoffLocationId)?.name}</p>
-                    </div>
-                  </div>
-
-                  {/* Extras */}
-                  {selectedExtras.length > 0 && (
-                    <div>
-                      <p className="text-sm font-medium mb-2">Selected Extras</p>
-                      <div className="space-y-1">
-                        {selectedExtras.map((id) => {
-                          const extra = EXTRAS.find((e) => e.id === id);
-                          if (!extra) return null;
-                          return (
-                            <div key={id} className="flex justify-between text-sm">
-                              <span>{extra.name}</span>
-                              <span>${extra.pricePerDay}/day</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  )}
-
-                  {/* Notes */}
-                  <div>
-                    <Label>Notes (optional)</Label>
-                    <textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder="Any special requests or notes..."
-                      className="w-full h-20 rounded-md border bg-background px-3 py-2 text-sm mt-1 resize-none"
-                    />
-                  </div>
-                </CardContent>
-              </Card>
-            )}
-
-            {/* Step 3: Payment */}
-            {step === 3 && (
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">Payment Method</h3>
                 <p className="text-sm text-gray-500">Choose how you'd like to pay for this booking.</p>
@@ -490,7 +407,83 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
                 )}
               </div>
             )}
-            {step < 3 && (
+
+            {/* Step 3: Review */}
+            {step === 3 && (
+              <Card>
+                <CardContent className="p-6 space-y-5">
+                  <h2 className="text-xl font-semibold">Review Your Booking</h2>
+
+                  {/* Car Summary */}
+                  <div className="flex gap-4 p-4 rounded-xl bg-muted/50">
+                    <div className="h-20 w-28 rounded-lg overflow-hidden bg-muted flex-shrink-0">
+                      {car.images[0] ? (
+                        <img src={car.images[0].url} alt={car.name} className="h-full w-full object-cover" />
+                      ) : (
+                        <div className="h-full w-full flex items-center justify-center"><Car className="h-6 w-6 text-muted-foreground" /></div>
+                      )}
+                    </div>
+                    <div>
+                      <p className="font-semibold">{car.brand.name} {car.name}</p>
+                      <p className="text-sm text-muted-foreground">{car.year} &middot; {car.category.name}</p>
+                    </div>
+                  </div>
+
+                  {/* Dates */}
+                  <div className="grid grid-cols-2 gap-4 text-sm">
+                    <div>
+                      <p className="text-muted-foreground">Pickup</p>
+                      <p className="font-medium">{pickupDate ? formatDate(pickupDate) : "N/A"}</p>
+                      <p className="text-xs text-muted-foreground">{locations.find((l) => l.id === pickupLocationId)?.name}</p>
+                    </div>
+                    <div>
+                      <p className="text-muted-foreground">Return</p>
+                      <p className="font-medium">{returnDate ? formatDate(returnDate) : "N/A"}</p>
+                      <p className="text-xs text-muted-foreground">{locations.find((l) => l.id === dropoffLocationId)?.name}</p>
+                    </div>
+                  </div>
+
+                  {/* Extras */}
+                  {selectedExtras.length > 0 && (
+                    <div>
+                      <p className="text-sm font-medium mb-2">Selected Extras</p>
+                      <div className="space-y-1">
+                        {selectedExtras.map((id) => {
+                          const extra = EXTRAS.find((e) => e.id === id);
+                          if (!extra) return null;
+                          return (
+                            <div key={id} className="flex justify-between text-sm">
+                              <span>{extra.name}</span>
+                              <span>${extra.pricePerDay}/day</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Payment Method */}
+                  <div>
+                    <p className="text-sm font-medium mb-1">Payment Method</p>
+                    <p className="text-sm text-muted-foreground">
+                      {selectedPaymentMethod === "BANK_TRANSFER" ? "Bank Transfer" : "Pay at Pickup"}
+                    </p>
+                  </div>
+
+                  {/* Notes */}
+                  <div>
+                    <Label>Notes (optional)</Label>
+                    <textarea
+                      value={notes}
+                      onChange={(e) => setNotes(e.target.value)}
+                      placeholder="Any special requests or notes..."
+                      className="w-full h-20 rounded-md border bg-background px-3 py-2 text-sm mt-1 resize-none"
+                    />
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
             <div className="flex justify-between mt-6">
               <Button
                 variant="outline"
@@ -499,7 +492,7 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
               >
                 <ArrowLeft className="h-4 w-4 mr-2" /> Back
               </Button>
-              {step < STEPS.length - 1 ? (
+              {step < 3 ? (
                 <Button
                   onClick={() => setStep((s) => s + 1)}
                   disabled={(step === 0 && !isDatesStepValid)}
@@ -513,7 +506,6 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
                 </Button>
               )}
             </div>
-            )}
           </div>
 
           {/* Sidebar — Order Summary */}

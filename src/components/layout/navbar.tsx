@@ -92,6 +92,13 @@ export function Navbar() {
             </Button>
           )}
 
+          {!isLoaded && (
+            <div className="hidden sm:flex items-center gap-2">
+              <div className="h-8 w-16 rounded-md bg-muted animate-pulse" />
+              <div className="h-8 w-16 rounded-md bg-primary/20 animate-pulse" />
+            </div>
+          )}
+
           {isLoaded && isSignedIn && (
             <DropdownMenu>
               <DropdownMenuTrigger render={

@@ -18,6 +18,8 @@ export function ClerkProvider({ children }: ClerkProviderProps) {
     <NextClerkProvider
       publishableKey={clerkPubKey}
       afterSignOutUrl="/"
+      afterSignInUrl="/dashboard"
+      afterSignUpUrl="/dashboard"
     >
       {children}
     </NextClerkProvider>

@@ -17,9 +17,9 @@ import { Mail, Phone, MapPin, Clock, Send, Loader2, CheckCircle } from "lucide-r
 import { toast } from "sonner";
 
 const CONTACT_INFO = [
-  { icon: Phone, label: "Phone", value: "+1 (800) 555-DRIVE", description: "Mon-Fri 8am-8pm EST" },
-  { icon: Mail, label: "Email", value: "support@driverent.com", description: "We reply within 24 hours" },
-  { icon: MapPin, label: "Headquarters", value: "123 Luxury Lane, Miami, FL 33101", description: "" },
+  { icon: Phone, label: "Phone", value: "(+212) 679844325", description: "Mon-Fri 8am-8pm GMT" },
+  { icon: Mail, label: "Email", value: "zeussan1973@gmail.com", description: "We reply within 24 hours" },
+  { icon: MapPin, label: "Headquarters", value: "Tarrast Inzegane, Agadir ", description: "" },
   { icon: Clock, label: "Business Hours", value: "Mon-Sat: 7am - 10pm", description: "Sunday: 9am - 6pm" },
 ];
 

@@ -12,3 +12,6 @@ yarn.lock
 .env.local
 .env*.local
 prisma/migrations
+
+.vercel
+.env*

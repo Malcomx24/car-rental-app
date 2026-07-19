@@ -56,15 +56,34 @@ export default function SignUpPage() {
     try {
       if (!clerkLoaded) throw new Error("Auth is loading, please try again.");
 
-      await signUp.create({
+      console.log("[SignUp] Starting sign-up for:", email.trim());
+
+      const createResult = await signUp.create({
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         emailAddress: email.trim(),
       });
 
+      console.log("[SignUp] signUp.create response:", JSON.stringify({
+        status: createResult.status,
+        missingFields: createResult.missingFields,
+        unverifiedFields: createResult.unverifiedFields,
+        createdSessionId: createResult.createdSessionId,
+        createdUserId: createResult.createdUserId,
+      }, null, 2));
+
+      if (createResult.status === "complete") {
+        console.log("[SignUp] Sign-up already complete. Session:", createResult.createdSessionId);
+        await setActive({ session: createResult.createdSessionId });
+        router.replace("/dashboard");
+        return;
+      }
+
       await signUp.prepareEmailAddressVerification({ strategy: "email_code" });
+      console.log("[SignUp] Verification code sent to:", email.trim());
       setStep("otp");
     } catch (err: unknown) {
+      console.error("[SignUp] handleSendCode error:", err);
       const message = err instanceof Error ? err.message : "Failed to create account. Please try again.";
       setError(message);
     } finally {
@@ -80,17 +99,42 @@ export default function SignUpPage() {
     try {
       if (!clerkLoaded) throw new Error("Auth is loading, please try again.");
 
+      console.log("[SignUp] Attempting email verification...");
+
       const result = await signUp.attemptEmailAddressVerification({
         code: code.trim(),
       });
 
+      console.log("[SignUp] attemptEmailAddressVerification response:", JSON.stringify({
+        status: result.status,
+        createdSessionId: result.createdSessionId,
+        createdUserId: result.createdUserId,
+        missingFields: result.missingFields,
+        unverifiedFields: result.unverifiedFields,
+      }, null, 2));
+
       if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
-        router.replace("/dashboard");
+        if (result.createdSessionId) {
+          console.log("[SignUp] Verification complete! Activating session:", result.createdSessionId);
+          await setActive({ session: result.createdSessionId });
+          console.log("[SignUp] Session activated. Redirecting to /dashboard");
+          router.replace("/dashboard");
+        } else {
+          console.error("[SignUp] Status is complete but createdSessionId is missing");
+          setError("Account created but session could not be established. Please try signing in.");
+        }
       } else {
-        setError("Unexpected result. Please try again.");
+        console.warn("[SignUp] Verification returned non-complete status:", result.status);
+        console.warn("[SignUp] Missing fields:", result.missingFields);
+        console.warn("[SignUp] Unverified fields:", result.unverifiedFields);
+        setError(
+          `Verification incomplete (status: ${result.status}). ` +
+          `Missing: ${result.missingFields?.join(", ") || "none"}. ` +
+          `Check Clerk Dashboard sign-up requirements.`
+        );
       }
     } catch (err: unknown) {
+      console.error("[SignUp] Verification error:", err);
       const message = err instanceof Error ? err.message : "Invalid code. Please try again.";
       setError(message);
     } finally {

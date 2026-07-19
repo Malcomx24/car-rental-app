@@ -54,13 +54,22 @@ export default function SignInPage() {
     try {
       if (!clerkLoaded) throw new Error("Auth is loading, please try again.");
 
-      await signIn.create({
+      console.log("[SignIn] Creating sign-in for:", email.trim());
+
+      const result = await signIn.create({
         identifier: email.trim(),
         strategy: "email_code",
       });
 
+      console.log("[SignIn] signIn.create response:", JSON.stringify({
+        status: result.status,
+        supportedFirstFactors: result.supportedFirstFactors,
+      }, null, 2));
+
+      console.log("[SignIn] Verification code sent to:", email.trim());
       setStep("otp");
     } catch (err: unknown) {
+      console.error("[SignIn] handleSendCode error:", err);
       const message = err instanceof Error ? err.message : "Failed to send code. Please try again.";
       setError(message);
     } finally {
@@ -76,18 +85,34 @@ export default function SignInPage() {
     try {
       if (!clerkLoaded) throw new Error("Auth is loading, please try again.");
 
+      console.log("[SignIn] Attempting verification...");
+
       const result = await signIn.attemptFirstFactor({
         strategy: "email_code",
         code: code.trim(),
       });
 
+      console.log("[SignIn] attemptFirstFactor response:", JSON.stringify({
+        status: result.status,
+        createdSessionId: result.createdSessionId,
+      }, null, 2));
+
       if (result.status === "complete") {
-        await setActive({ session: result.createdSessionId });
-        router.replace("/dashboard");
+        if (result.createdSessionId) {
+          console.log("[SignIn] Verification complete! Activating session:", result.createdSessionId);
+          await setActive({ session: result.createdSessionId });
+          console.log("[SignIn] Session activated. Redirecting to /dashboard");
+          router.replace("/dashboard");
+        } else {
+          console.error("[SignIn] Status is complete but createdSessionId is missing");
+          setError("Sign-in completed but session could not be established. Please try again.");
+        }
       } else {
-        setError("Unexpected result. Please try again.");
+        console.warn("[SignIn] Verification returned non-complete status:", result.status);
+        setError(`Sign-in incomplete (status: ${result.status}). Check browser console for details.`);
       }
     } catch (err: unknown) {
+      console.error("[SignIn] Verification error:", err);
       const message = err instanceof Error ? err.message : "Invalid code. Please try again.";
       setError(message);
     } finally {

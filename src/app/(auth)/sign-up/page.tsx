@@ -16,6 +16,7 @@ export default function SignUpPage() {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [code, setCode] = useState("");
   const [step, setStep] = useState<"details" | "otp">("details");
   const [error, setError] = useState("");
@@ -62,6 +63,7 @@ export default function SignUpPage() {
         firstName: firstName.trim(),
         lastName: lastName.trim(),
         emailAddress: email.trim(),
+        password: password,
       });
 
       console.log("[SignUp] signUp.create response:", JSON.stringify({
@@ -242,6 +244,19 @@ export default function SignUpPage() {
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="password">Password</Label>
+          <Input
+            id="password"
+            type="password"
+            placeholder="Create a password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            required
+            minLength={8}
           />
         </div>
 

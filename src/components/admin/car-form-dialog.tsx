@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -93,6 +94,7 @@ function getInitialState(initialData?: CarFormDialogProps["initialData"]) {
 }
 
 export function CarFormDialog({ open, onClose, onSave, initialData, categories }: CarFormDialogProps) {
+  const t = useTranslations("admin");
   const { upload, uploading, error: uploadError } = useImageUpload();
   const [saving, setSaving] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -189,7 +191,7 @@ export function CarFormDialog({ open, onClose, onSave, initialData, categories }
     <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{initialData?.id ? "Edit Car" : "Add New Car"}</DialogTitle>
+          <DialogTitle>{initialData?.id ? t("editCar") : t("addNewCar")}</DialogTitle>
         </DialogHeader>
 
         <div className="space-y-6 py-2">
@@ -197,7 +199,7 @@ export function CarFormDialog({ open, onClose, onSave, initialData, categories }
 
           {/* Images */}
           <div>
-            <Label className="text-base font-semibold">Photos</Label>
+            <Label className="text-base font-semibold">{t("photos")}</Label>
             <div className="mt-2 grid grid-cols-3 sm:grid-cols-4 gap-3">
               {images.map((img, i) => (
                 <div key={i} className="relative aspect-square rounded-lg overflow-hidden border group">
@@ -205,7 +207,7 @@ export function CarFormDialog({ open, onClose, onSave, initialData, categories }
                   <button onClick={() => removeImage(i)} className="absolute top-1 right-1 p-1 rounded-full bg-black/60 text-white opacity-0 group-hover:opacity-100 transition-opacity">
                     <X className="h-3 w-3" />
                   </button>
-                  {i === 0 && <Badge className="absolute bottom-1 left-1 text-[10px]">Primary</Badge>}
+                  {i === 0 && <Badge className="absolute bottom-1 left-1 text-[10px]">{t("primary")}</Badge>}
                 </div>
               ))}
               <label className="aspect-square rounded-lg border-2 border-dashed flex flex-col items-center justify-center cursor-pointer hover:bg-muted/50 transition-colors">
@@ -215,7 +217,7 @@ export function CarFormDialog({ open, onClose, onSave, initialData, categories }
                 ) : (
                   <>
                     <Upload className="h-6 w-6 text-muted-foreground mb-1" />
-                    <span className="text-xs text-muted-foreground">Upload</span>
+                    <span className="text-xs text-muted-foreground">{t("upload")}</span>
                   </>
                 )}
               </label>
@@ -224,37 +226,37 @@ export function CarFormDialog({ open, onClose, onSave, initialData, categories }
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="sm:col-span-2">
-              <Label>Car Name *</Label>
-              <Input value={form.name} onChange={(e) => updateField("name", e.target.value)} placeholder="e.g. BMW 3 Series 330i" className="mt-1" />
+              <Label>{t("carName")} *</Label>
+              <Input value={form.name} onChange={(e) => updateField("name", e.target.value)} placeholder={t("placeholderCarName")} className="mt-1" />
               {errors.name && <p className="text-xs text-destructive mt-1">{errors.name}</p>}
             </div>
             <div>
-              <Label>Brand *</Label>
+              <Label>{t("brandName")} *</Label>
               <select value={form.brandId || ""} onChange={(e) => updateField("brandId", e.target.value)} className="w-full h-10 rounded-md border bg-background px-3 text-sm mt-1">
-                <option value="">Select brand</option>
+                <option value="">{t("selectBrand")}</option>
                 {brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
               </select>
               {errors.brandId && <p className="text-xs text-destructive mt-1">{errors.brandId}</p>}
             </div>
             <div>
-              <Label>Category *</Label>
+              <Label>{t("categoryName")} *</Label>
               <select value={form.categoryId} onChange={(e) => updateField("categoryId", e.target.value)} className="w-full h-10 rounded-md border bg-background px-3 text-sm mt-1">
-                <option value="">Select category</option>
+                <option value="">{t("selectCategory")}</option>
                 {categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
               </select>
               {errors.categoryId && <p className="text-xs text-destructive mt-1">{errors.categoryId}</p>}
             </div>
             <div>
-              <Label>Year *</Label>
+              <Label>{t("yearLabel")} *</Label>
               <Input type="number" value={form.year} onChange={(e) => updateField("year", Number(e.target.value))} className="mt-1" />
             </div>
             <div>
-              <Label>License Plate *</Label>
-              <Input value={form.licensePlate} onChange={(e) => updateField("licensePlate", e.target.value)} placeholder="ABC-1234" className="mt-1" />
+              <Label>{t("licensePlateLabel")} *</Label>
+              <Input value={form.licensePlate} onChange={(e) => updateField("licensePlate", e.target.value)} placeholder={t("placeholderLicensePlate")} className="mt-1" />
               {errors.licensePlate && <p className="text-xs text-destructive mt-1">{errors.licensePlate}</p>}
             </div>
             <div className="sm:col-span-2">
-              <Label>Description *</Label>
+              <Label>{t("description")} *</Label>
               <Textarea value={form.description} onChange={(e) => updateField("description", e.target.value)} rows={3} className="mt-1" />
               {errors.description && <p className="text-xs text-destructive mt-1">{errors.description}</p>}
             </div>
@@ -262,22 +264,22 @@ export function CarFormDialog({ open, onClose, onSave, initialData, categories }
 
           {/* Pricing */}
           <div>
-            <Label className="text-base font-semibold">Pricing</Label>
+            <Label className="text-base font-semibold">{t("pricing")}</Label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
               <div>
-                <Label className="text-xs">Per Day *</Label>
+                <Label className="text-xs">{t("perDayLabel")} *</Label>
                 <Input type="number" step="0.01" value={form.pricePerDay} onChange={(e) => updateField("pricePerDay", Number(e.target.value))} className="mt-1" />
               </div>
               <div>
-                <Label className="text-xs">Weekend/Day</Label>
+                <Label className="text-xs">{t("weekendPerDay")}</Label>
                 <Input type="number" step="0.01" value={form.weekendPricePerDay || ""} onChange={(e) => updateField("weekendPricePerDay", e.target.value ? Number(e.target.value) : null)} className="mt-1" />
               </div>
               <div>
-                <Label className="text-xs">Weekly</Label>
+                <Label className="text-xs">{t("weekly")}</Label>
                 <Input type="number" step="0.01" value={form.weeklyPrice || ""} onChange={(e) => updateField("weeklyPrice", e.target.value ? Number(e.target.value) : null)} className="mt-1" />
               </div>
               <div>
-                <Label className="text-xs">Monthly</Label>
+                <Label className="text-xs">{t("monthly")}</Label>
                 <Input type="number" step="0.01" value={form.monthlyPrice || ""} onChange={(e) => updateField("monthlyPrice", e.target.value ? Number(e.target.value) : null)} className="mt-1" />
               </div>
             </div>
@@ -285,50 +287,50 @@ export function CarFormDialog({ open, onClose, onSave, initialData, categories }
 
           {/* Specs */}
           <div>
-            <Label className="text-base font-semibold">Specifications</Label>
+            <Label className="text-base font-semibold">{t("specifications")}</Label>
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-2">
               <div>
-                <Label className="text-xs">Fuel Type</Label>
+                <Label className="text-xs">{t("fuelTypeLabel")}</Label>
                 <select value={form.fuelType} onChange={(e) => updateField("fuelType", e.target.value as CarFormData["fuelType"])} className="w-full h-10 rounded-md border bg-background px-3 text-sm mt-1">
                   {FUEL_OPTIONS.map((f) => <option key={f} value={f}>{f.replace("_", " ")}</option>)}
                 </select>
               </div>
               <div>
-                <Label className="text-xs">Transmission</Label>
+                <Label className="text-xs">{t("transmissionLabel")}</Label>
                 <select value={form.transmission} onChange={(e) => updateField("transmission", e.target.value as CarFormData["transmission"])} className="w-full h-10 rounded-md border bg-background px-3 text-sm mt-1">
-                  {TRANSMISSION_OPTIONS.map((t) => <option key={t} value={t}>{t.replace("_", " ")}</option>)}
+                  {TRANSMISSION_OPTIONS.map((tr) => <option key={tr} value={tr}>{tr.replace("_", " ")}</option>)}
                 </select>
               </div>
               <div>
-                <Label className="text-xs">Seats</Label>
+                <Label className="text-xs">{t("seatsLabel")}</Label>
                 <Input type="number" value={form.seats} onChange={(e) => updateField("seats", Number(e.target.value))} className="mt-1" />
               </div>
               <div>
-                <Label className="text-xs">Doors</Label>
+                <Label className="text-xs">{t("doorsLabel")}</Label>
                 <Input type="number" value={form.doors} onChange={(e) => updateField("doors", Number(e.target.value))} className="mt-1" />
               </div>
               <div>
-                <Label className="text-xs">Color *</Label>
+                <Label className="text-xs">{t("colorLabel")} *</Label>
                 <Input value={form.color} onChange={(e) => updateField("color", e.target.value)} className="mt-1" />
               </div>
               <div>
-                <Label className="text-xs">Mileage (mi)</Label>
+                <Label className="text-xs">{t("mileageLabel")}</Label>
                 <Input type="number" value={form.mileage} onChange={(e) => updateField("mileage", Number(e.target.value))} className="mt-1" />
               </div>
               <div>
-                <Label className="text-xs">Horsepower</Label>
+                <Label className="text-xs">{t("horsepowerLabel")}</Label>
                 <Input type="number" value={form.horsepower || ""} onChange={(e) => updateField("horsepower", e.target.value ? Number(e.target.value) : null)} className="mt-1" />
               </div>
               <div>
-                <Label className="text-xs">Engine Size</Label>
-                <Input value={form.engineSize || ""} onChange={(e) => updateField("engineSize", e.target.value)} placeholder="2.0L" className="mt-1" />
+                <Label className="text-xs">{t("engineSizeLabel")}</Label>
+                <Input value={form.engineSize || ""} onChange={(e) => updateField("engineSize", e.target.value)} placeholder={t("placeholderEngineSize")} className="mt-1" />
               </div>
             </div>
           </div>
 
           {/* Features */}
           <div>
-            <Label className="text-base font-semibold">Features</Label>
+            <Label className="text-base font-semibold">{t("featuresLabel")}</Label>
             <div className="flex flex-wrap gap-2 mt-2">
               {form.features?.map((f) => (
                 <Badge key={f} variant="secondary" className="gap-1">
@@ -341,7 +343,7 @@ export function CarFormDialog({ open, onClose, onSave, initialData, categories }
               <Input
                 value={featureInput}
                 onChange={(e) => setFeatureInput(e.target.value)}
-                placeholder="Add a feature"
+                placeholder={t("addFeaturePlaceholder")}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addFeature(featureInput); } }}
               />
               <Button type="button" variant="outline" size="sm" onClick={() => addFeature(featureInput)}>
@@ -359,31 +361,31 @@ export function CarFormDialog({ open, onClose, onSave, initialData, categories }
 
           {/* Status & Flags */}
           <div>
-            <Label className="text-base font-semibold">Status & Visibility</Label>
+            <Label className="text-base font-semibold">{t("statusAndVisibility")}</Label>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-2">
               <div>
-                <Label className="text-xs">Status</Label>
+                <Label className="text-xs">{t("statusLabel")}</Label>
                 <select value={form.status} onChange={(e) => updateField("status", e.target.value as CarFormData["status"])} className="w-full h-10 rounded-md border bg-background px-3 text-sm mt-1">
                   {STATUS_OPTIONS.map((s) => <option key={s} value={s}>{s.replace("_", " ")}</option>)}
                 </select>
               </div>
               <div className="flex items-center gap-2 mt-6">
                 <input type="checkbox" checked={form.isFeatured} onChange={(e) => updateField("isFeatured", e.target.checked)} className="rounded" id="featured" />
-                <Label htmlFor="featured" className="text-sm">Featured</Label>
+                <Label htmlFor="featured" className="text-sm">{t("featuredLabel")}</Label>
               </div>
               <div className="flex items-center gap-2 mt-6">
                 <input type="checkbox" checked={form.isPublished} onChange={(e) => updateField("isPublished", e.target.checked)} className="rounded" id="published" />
-                <Label htmlFor="published" className="text-sm">Published</Label>
+                <Label htmlFor="published" className="text-sm">{t("publishedLabel")}</Label>
               </div>
             </div>
           </div>
         </div>
 
         <div className="flex justify-end gap-3 pt-4 border-t">
-          <Button variant="outline" onClick={onClose}>Cancel</Button>
+          <Button variant="outline" onClick={onClose}>{t("cancelButton")}</Button>
           <Button onClick={handleSave} disabled={saving || uploading}>
             {saving ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <Check className="h-4 w-4 mr-2" />}
-            {initialData?.id ? "Save Changes" : "Create Car"}
+            {initialData?.id ? t("saveChangesButton") : t("createCar")}
           </Button>
         </div>
       </DialogContent>

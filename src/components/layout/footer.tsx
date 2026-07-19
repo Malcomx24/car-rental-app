@@ -1,8 +1,31 @@
 import Link from "next/link";
 import { Car } from "lucide-react";
-import { FOOTER_LINKS, APP_NAME } from "@/lib/constants";
+import { getTranslations } from "next-intl/server";
 
-export function Footer() {
+export async function Footer() {
+  const t = await getTranslations("footer");
+
+  const companyLinks = [
+    { label: t("aboutUs"), href: "/about" },
+    { label: t("careers"), href: "/careers" },
+    { label: t("blog"), href: "/blog" },
+    { label: t("press"), href: "/press" },
+  ];
+
+  const supportLinks = [
+    { label: t("helpCenter"), href: "/help" },
+    { label: t("contactUs"), href: "/contact" },
+    { label: t("faq"), href: "/faq" },
+    { label: t("roadsideAssistance"), href: "/roadside-assistance" },
+  ];
+
+  const legalLinks = [
+    { label: t("privacyPolicy"), href: "/privacy" },
+    { label: t("termsOfService"), href: "/terms" },
+    { label: t("cookiePolicy"), href: "/cookies" },
+    { label: t("licenseAgreement"), href: "/license" },
+  ];
+
   return (
     <footer className="border-t bg-muted/50">
       <div className="container mx-auto px-4 py-12">
@@ -10,18 +33,17 @@ export function Footer() {
           <div className="space-y-4">
             <Link href="/" className="flex items-center gap-2 font-bold text-xl">
               <Car className="h-6 w-6" />
-              <span>{APP_NAME}</span>
+              <span>DriveRent</span>
             </Link>
             <p className="text-sm text-muted-foreground max-w-xs">
-              Premium car rental service offering luxury vehicles for every occasion. Experience the
-              joy of driving your dream car.
+              {t("description")}
             </p>
           </div>
 
           <div>
-            <h3 className="font-semibold mb-4">Company</h3>
+            <h3 className="font-semibold mb-4">{t("company")}</h3>
             <ul className="space-y-2">
-              {FOOTER_LINKS.company.map((link) => (
+              {companyLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
@@ -35,9 +57,9 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="font-semibold mb-4">Support</h3>
+            <h3 className="font-semibold mb-4">{t("support")}</h3>
             <ul className="space-y-2">
-              {FOOTER_LINKS.support.map((link) => (
+              {supportLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
@@ -51,9 +73,9 @@ export function Footer() {
           </div>
 
           <div>
-            <h3 className="font-semibold mb-4">Legal</h3>
+            <h3 className="font-semibold mb-4">{t("legal")}</h3>
             <ul className="space-y-2">
-              {FOOTER_LINKS.legal.map((link) => (
+              {legalLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
@@ -68,7 +90,7 @@ export function Footer() {
         </div>
 
         <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} {APP_NAME}. All rights reserved.
+          &copy; {new Date().getFullYear()} DriveRent. {t("copyright")}
         </div>
       </div>
     </footer>

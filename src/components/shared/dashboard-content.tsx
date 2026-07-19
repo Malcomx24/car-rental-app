@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { BookingStatusBadge } from "@/components/shared/booking-status-badge";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { CalendarDays, Car, DollarSign, Heart, Loader2, ArrowRight, MapPin, Star } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 interface DashboardStats {
   activeBookings: number;
@@ -40,6 +41,9 @@ interface FavoriteCar {
 }
 
 export default function DashboardOverview() {
+  const t = useTranslations("dashboard");
+  const tc = useTranslations("common");
+  const tNav = useTranslations("nav");
   const [stats, setStats] = useState<DashboardStats>({ activeBookings: 0, totalSpent: 0, totalBookings: 0, favorites: 0 });
   const [recentBookings, setRecentBookings] = useState<RecentBooking[]>([]);
   const [favorites, setFavorites] = useState<FavoriteCar[]>([]);
@@ -86,11 +90,18 @@ export default function DashboardOverview() {
     );
   }
 
+  const quickLinks = [
+    { label: t("browseCars"), href: "/cars", icon: <Car className="h-5 w-5" /> },
+    { label: t("myBookings"), href: "/dashboard/bookings", icon: <CalendarDays className="h-5 w-5" /> },
+    { label: t("invoices"), href: "/dashboard/invoices", icon: <DollarSign className="h-5 w-5" /> },
+    { label: tNav("settings"), href: "/dashboard/settings", icon: <Heart className="h-5 w-5" /> },
+  ];
+
   return (
     <div className="space-y-8">
       <div>
-        <h1 className="text-3xl font-bold">Welcome back!</h1>
-        <p className="text-muted-foreground mt-1">Here&apos;s an overview of your account.</p>
+        <h1 className="text-3xl font-bold">{t("welcomeBack")}</h1>
+        <p className="text-muted-foreground mt-1">{t("overviewSubtitle")}</p>
       </div>
 
       {/* Stats */}
@@ -99,7 +110,7 @@ export default function DashboardOverview() {
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-blue-500/10"><Car className="h-5 w-5 text-blue-600" /></div>
             <div>
-              <p className="text-sm text-muted-foreground">Active Bookings</p>
+              <p className="text-sm text-muted-foreground">{t("activeBookings")}</p>
               <p className="text-2xl font-bold">{stats.activeBookings}</p>
             </div>
           </CardContent>
@@ -108,7 +119,7 @@ export default function DashboardOverview() {
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-emerald-500/10"><DollarSign className="h-5 w-5 text-emerald-600" /></div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Spent</p>
+              <p className="text-sm text-muted-foreground">{t("totalSpent")}</p>
               <p className="text-2xl font-bold">{formatCurrency(stats.totalSpent)}</p>
             </div>
           </CardContent>
@@ -117,7 +128,7 @@ export default function DashboardOverview() {
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-amber-500/10"><CalendarDays className="h-5 w-5 text-amber-600" /></div>
             <div>
-              <p className="text-sm text-muted-foreground">Total Bookings</p>
+              <p className="text-sm text-muted-foreground">{t("totalBookings")}</p>
               <p className="text-2xl font-bold">{stats.totalBookings}</p>
             </div>
           </CardContent>
@@ -126,7 +137,7 @@ export default function DashboardOverview() {
           <CardContent className="p-4 flex items-center gap-3">
             <div className="p-2 rounded-lg bg-red-500/10"><Heart className="h-5 w-5 text-red-600" /></div>
             <div>
-              <p className="text-sm text-muted-foreground">Favorites</p>
+              <p className="text-sm text-muted-foreground">{t("favorites")}</p>
               <p className="text-2xl font-bold">{stats.favorites}</p>
             </div>
           </CardContent>
@@ -136,18 +147,18 @@ export default function DashboardOverview() {
       {/* Recent Bookings */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-semibold">Recent Bookings</h2>
+          <h2 className="text-xl font-semibold">{t("recentBookings")}</h2>
           <Link href="/dashboard/bookings">
-            <Button variant="ghost" size="sm">View all <ArrowRight className="h-4 w-4 ml-1" /></Button>
+            <Button variant="ghost" size="sm">{tc("viewAll")} <ArrowRight className="h-4 w-4 ml-1" /></Button>
           </Link>
         </div>
         {recentBookings.length === 0 ? (
           <Card>
             <CardContent className="p-8 text-center">
               <Car className="h-10 w-10 mx-auto text-muted-foreground mb-3" />
-              <p className="font-medium">No bookings yet</p>
-              <p className="text-sm text-muted-foreground mt-1">Start by browsing our premium fleet.</p>
-              <Link href="/cars"><Button className="mt-4" size="sm">Browse Cars</Button></Link>
+              <p className="font-medium">{t("noBookingsYet")}</p>
+              <p className="text-sm text-muted-foreground mt-1">{t("startByBrowsing")}</p>
+              <Link href="/cars"><Button className="mt-4" size="sm">{t("browseCars")}</Button></Link>
             </CardContent>
           </Card>
         ) : (
@@ -183,9 +194,9 @@ export default function DashboardOverview() {
       {favorites.length > 0 && (
         <div>
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-semibold">Your Favorites</h2>
+            <h2 className="text-xl font-semibold">{t("yourFavorites")}</h2>
             <Link href="/dashboard/favorites">
-              <Button variant="ghost" size="sm">View all <ArrowRight className="h-4 w-4 ml-1" /></Button>
+              <Button variant="ghost" size="sm">{tc("viewAll")} <ArrowRight className="h-4 w-4 ml-1" /></Button>
             </Link>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
@@ -203,7 +214,7 @@ export default function DashboardOverview() {
                     <p className="text-xs text-muted-foreground">{car.brand.name}</p>
                     <p className="font-medium text-sm truncate">{car.name}</p>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="font-bold">${Number(car.pricePerDay).toFixed(0)}<span className="text-xs text-muted-foreground font-normal">/day</span></span>
+                      <span className="font-bold">${Number(car.pricePerDay).toFixed(0)}<span className="text-xs text-muted-foreground font-normal">{tc("perDay")}</span></span>
                       <div className="flex items-center gap-1">
                         <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                         <span className="text-xs">{Number(car.averageRating).toFixed(1)}</span>
@@ -219,12 +230,7 @@ export default function DashboardOverview() {
 
       {/* Quick Links */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        {[
-          { label: "Browse Cars", href: "/cars", icon: <Car className="h-5 w-5" /> },
-          { label: "My Bookings", href: "/dashboard/bookings", icon: <CalendarDays className="h-5 w-5" /> },
-          { label: "Invoices", href: "/dashboard/invoices", icon: <DollarSign className="h-5 w-5" /> },
-          { label: "Settings", href: "/dashboard/settings", icon: <Heart className="h-5 w-5" /> },
-        ].map((link) => (
+        {quickLinks.map((link) => (
           <Link key={link.href} href={link.href}>
             <Card className="hover:shadow-md transition-shadow cursor-pointer">
               <CardContent className="p-4 flex items-center gap-3">

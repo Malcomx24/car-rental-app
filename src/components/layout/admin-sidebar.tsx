@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
   Car,
@@ -22,29 +23,30 @@ import {
   MapPin,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Separator } from "@/components/ui/separator";
 import { useState } from "react";
 
-const navItems = [
-  { label: "Dashboard", href: "/admin", icon: LayoutDashboard },
-  { label: "Cars", href: "/admin/cars", icon: Car },
-  { label: "Brands", href: "/admin/brands", icon: Tag },
-  { label: "Categories", href: "/admin/categories", icon: FolderOpen },
-  { label: "Locations", href: "/admin/locations", icon: MapPin },
-  { label: "Bookings", href: "/admin/bookings", icon: CalendarDays },
-  { label: "Customers", href: "/admin/customers", icon: Users },
-  { label: "Reviews", href: "/admin/reviews", icon: Star },
-  { label: "Payments", href: "/admin/payments", icon: CreditCard },
-  { label: "Maintenance", href: "/admin/maintenance", icon: Wrench },
-  { label: "Reports", href: "/admin/reports", icon: BarChart3 },
-  { label: "Notifications", href: "/admin/notifications", icon: Bell },
-  { label: "Invoices", href: "/admin/invoices", icon: FileText },
-  { label: "Settings", href: "/admin/settings", icon: Settings },
-];
-
 export function AdminSidebar() {
+  const t = useTranslations("admin");
+  const tc = useTranslations("common");
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
+
+  const navItems = [
+    { label: t("dashboard"), href: "/admin", icon: LayoutDashboard },
+    { label: t("carManagement"), href: "/admin/cars", icon: Car },
+    { label: t("brandManagement"), href: "/admin/brands", icon: Tag },
+    { label: t("categoryManagement"), href: "/admin/categories", icon: FolderOpen },
+    { label: t("locationManagement"), href: "/admin/locations", icon: MapPin },
+    { label: t("bookingManagement"), href: "/admin/bookings", icon: CalendarDays },
+    { label: t("customerManagement"), href: "/admin/customers", icon: Users },
+    { label: t("reviewManagement"), href: "/admin/reviews", icon: Star },
+    { label: t("paymentManagement"), href: "/admin/payments", icon: CreditCard },
+    { label: "Maintenance", href: "/admin/maintenance", icon: Wrench },
+    { label: t("reportManagement"), href: "/admin/reports", icon: BarChart3 },
+    { label: t("notificationManagement"), href: "/admin/notifications", icon: Bell },
+    { label: "Invoices", href: "/admin/invoices", icon: FileText },
+    { label: t("settings"), href: "/admin/settings", icon: Settings },
+  ];
 
   return (
     <aside
@@ -53,7 +55,6 @@ export function AdminSidebar() {
         collapsed ? "w-[68px]" : "w-64"
       )}
     >
-      {/* Logo */}
       <div className="flex items-center justify-between h-16 px-4">
         {!collapsed && (
           <Link href="/admin" className="flex items-center gap-2 font-bold text-lg">
@@ -80,9 +81,6 @@ export function AdminSidebar() {
         </Button>
       </div>
 
-      <Separator />
-
-      {/* Navigation */}
       <nav className="flex-1 overflow-y-auto py-3 px-2 space-y-0.5">
         {navItems.map((item) => {
           const isActive =
@@ -109,7 +107,6 @@ export function AdminSidebar() {
         })}
       </nav>
 
-      {/* Footer */}
       <div className="p-2 border-t">
         <Link
           href="/"
@@ -119,7 +116,7 @@ export function AdminSidebar() {
           )}
         >
           <LogOut className="h-4.5 w-4.5 shrink-0" />
-          {!collapsed && <span>Back to Site</span>}
+          {!collapsed && <span>{tc("backToSite")}</span>}
         </Link>
       </div>
     </aside>

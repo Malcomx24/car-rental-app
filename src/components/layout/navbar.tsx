@@ -1,7 +1,8 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { NAV_LINKS } from "@/lib/constants";
 import {
@@ -27,8 +28,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { LanguageSwitcher } from "@/components/shared/language-switcher";
 
 export function Navbar() {
+  const t = useTranslations("nav");
   const pathname = usePathname();
   const router = useRouter();
   const { setTheme, resolvedTheme } = useTheme();
@@ -43,7 +46,7 @@ export function Navbar() {
 
   const displayName = profile
     ? `${profile.firstName} ${profile.lastName}`
-    : "Account";
+    : t("myAccount");
 
   const initials = profile?.firstName && profile?.lastName
     ? `${profile.firstName[0]}${profile.lastName[0]}`.toUpperCase()
@@ -54,6 +57,14 @@ export function Navbar() {
     window.location.href = "/";
   };
 
+  const navItems = [
+    { label: t("home"), href: "/" },
+    { label: t("cars"), href: "/cars" },
+    { label: t("locations"), href: "/locations" },
+    { label: t("about"), href: "/about" },
+    { label: t("contact"), href: "/contact" },
+  ];
+
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/80 backdrop-blur-lg">
       <div className="container mx-auto flex h-16 items-center justify-between px-4">
@@ -63,7 +74,7 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-1">
-          {NAV_LINKS.map((link) => (
+          {navItems.map((link) => (
             <Link
               key={link.href}
               href={link.href}
@@ -80,6 +91,8 @@ export function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2">
+          <LanguageSwitcher />
+
           {mounted && (
             <Button
               variant="ghost"
@@ -130,17 +143,17 @@ export function Navbar() {
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={() => (window.location.href = "/dashboard")}>
                   <LayoutDashboard className="mr-2 h-4 w-4" />
-                  Dashboard
+                  {t("dashboard")}
                 </DropdownMenuItem>
                 {(profile?.role === "ADMIN" || profile?.role === "SUPER_ADMIN" || profile?.role === "MANAGER") && (
                   <DropdownMenuItem onClick={() => (window.location.href = "/admin")}>
                     <Settings className="mr-2 h-4 w-4" />
-                    Admin Panel
+                    {t("adminPanel")}
                   </DropdownMenuItem>
                 )}
                 <DropdownMenuItem onClick={() => (window.location.href = "/dashboard/settings")}>
                   <Settings className="mr-2 h-4 w-4" />
-                  Settings
+                  {t("settings")}
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
@@ -148,7 +161,7 @@ export function Navbar() {
                   className="text-destructive"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
-                  Sign Out
+                  {t("signOut")}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
@@ -160,13 +173,13 @@ export function Navbar() {
                 href="/sign-in"
                 className="inline-flex items-center justify-center rounded-md px-3 py-1.5 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
               >
-                Sign In
+                {t("signIn")}
               </Link>
               <Link
                 href="/sign-up"
                 className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground px-3 py-1.5 text-sm font-medium hover:bg-primary/80 transition-colors"
               >
-                Sign Up
+                {t("signUp")}
               </Link>
             </div>
           )}
@@ -189,7 +202,7 @@ export function Navbar() {
       {mobileMenuOpen && (
         <div className="md:hidden border-t bg-background">
           <nav className="container mx-auto flex flex-col gap-1 p-4">
-            {NAV_LINKS.map((link) => (
+            {navItems.map((link) => (
               <Link
                 key={link.href}
                 href={link.href}
@@ -211,14 +224,14 @@ export function Navbar() {
                   onClick={() => setMobileMenuOpen(false)}
                   className="inline-flex items-center justify-center rounded-lg border border-input bg-background px-4 py-2 text-sm font-medium hover:bg-accent hover:text-accent-foreground transition-colors"
                 >
-                  Sign In
+                  {t("signIn")}
                 </Link>
                 <Link
                   href="/sign-up"
                   onClick={() => setMobileMenuOpen(false)}
                   className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/80 transition-colors"
                 >
-                  Sign Up
+                  {t("signUp")}
                 </Link>
               </div>
             )}

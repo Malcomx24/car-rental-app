@@ -2,20 +2,32 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
-import { DASHBOARD_NAV_LINKS } from "@/lib/constants";
 import { Car, LogOut, Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 
 export function DashboardSidebar() {
+  const t = useTranslations("dashboard");
+  const tc = useTranslations("common");
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
 
+  const navLinks = [
+    { label: t("overview"), href: "/dashboard" },
+    { label: t("myBookings"), href: "/dashboard/bookings" },
+    { label: t("favorites"), href: "/dashboard/favorites" },
+    { label: t("invoices"), href: "/dashboard/invoices" },
+    { label: t("notifications"), href: "/dashboard/notifications" },
+    { label: t("notificationPreferences"), href: "/dashboard/notifications/preferences" },
+    { label: tc("settings"), href: "/dashboard/settings" },
+  ];
+
   const navContent = (
     <nav className="flex flex-col gap-1 p-2">
-      {DASHBOARD_NAV_LINKS.map((link) => (
+      {navLinks.map((link) => (
         <Link
           key={link.href}
           href={link.href}
@@ -38,7 +50,7 @@ export function DashboardSidebar() {
       <div className="hidden lg:flex flex-col w-64 border-r bg-muted/30 min-h-full">
         <div className="flex items-center gap-2 p-4 font-bold text-lg">
           <Car className="h-6 w-6" />
-          <span>My Account</span>
+          <span>{t("myAccount")}</span>
         </div>
         {navContent}
         <div className="mt-auto p-2 border-t">
@@ -47,7 +59,7 @@ export function DashboardSidebar() {
             className="flex items-center gap-3 px-3 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent text-muted-foreground"
           >
             <LogOut className="h-4 w-4" />
-            <span>Back to Site</span>
+            <span>{tc("backToSite")}</span>
           </Link>
         </div>
       </div>
@@ -60,7 +72,7 @@ export function DashboardSidebar() {
           <SheetContent side="left" className="w-64 p-0">
             <div className="flex items-center gap-2 p-4 font-bold text-lg border-b">
               <Car className="h-6 w-6" />
-              <span>My Account</span>
+              <span>{t("myAccount")}</span>
             </div>
             {navContent}
           </SheetContent>

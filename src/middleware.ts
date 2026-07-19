@@ -1,4 +1,9 @@
+import createMiddleware from "next-intl/middleware";
 import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
+import { routing } from "./i18n/routing";
+import { NextResponse } from "next/server";
+
+const handleI18nRouting = createMiddleware(routing);
 
 const publicRoutes = [
   "/",
@@ -37,26 +42,29 @@ export default clerkMiddleware(async (auth, req) => {
   const { userId } = await auth();
 
   if (isPublicRoute(req)) {
-    return;
+    return handleI18nRouting(req);
   }
 
   if (isAuthRoute(req)) {
     if (userId) {
-      return Response.redirect(new URL("/dashboard", req.url));
+      const locale = req.nextUrl.pathname.split("/")[1] || "fr";
+      return Response.redirect(new URL(`/${locale}/dashboard`, req.url));
     }
-    return;
+    return handleI18nRouting(req);
   }
 
   if (!userId) {
-    const signInUrl = new URL("/sign-in", req.url);
+    const locale = req.nextUrl.pathname.split("/")[1] || "fr";
+    const signInUrl = new URL(`/${locale}/sign-in`, req.url);
     signInUrl.searchParams.set("redirect_url", req.url);
     return Response.redirect(signInUrl);
   }
+
+  return handleI18nRouting(req);
 });
 
 export const config = {
   matcher: [
-    "/((?!_next|[^?]*\\.(?:html?|css|js(?!on)|jpe?g|webp|png|gif|svg|ttf|woff2?|ico|csv|docx?|xlsx?|zip|webmanifest)).*)",
-    "/(api|trpc)(.*)",
+    "/((?!_next|api|.*\\..*).*)",
   ],
 };

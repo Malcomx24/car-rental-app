@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState } from "react";
+import { useTranslations } from "next-intl";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Select } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { formatCurrency } from "@/lib/utils";
@@ -45,16 +45,6 @@ interface CarTableProps {
   onDelete: (id: string) => void;
 }
 
-const STATUS_OPTIONS = [
-  { value: "", label: "All Statuses" },
-  { value: "AVAILABLE", label: "Available" },
-  { value: "RESERVED", label: "Reserved" },
-  { value: "RENTED", label: "Rented" },
-  { value: "MAINTENANCE", label: "Maintenance" },
-  { value: "CLEANING", label: "Cleaning" },
-  { value: "OUT_OF_SERVICE", label: "Out of Service" },
-];
-
 const STATUS_COLORS: Record<string, string> = {
   AVAILABLE: "bg-emerald-500/10 text-emerald-600",
   RESERVED: "bg-amber-500/10 text-amber-600",
@@ -68,7 +58,18 @@ export function CarTable({
   cars, total, page, totalPages, loading, search, statusFilter, brandFilter,
   onSearch, onStatusFilter, onBrandFilter, onPageChange, onDelete,
 }: CarTableProps) {
+  const t = useTranslations("admin");
   const [showFilters, setShowFilters] = useState(false);
+
+  const STATUS_OPTIONS = [
+    { value: "", label: t("allStatuses") },
+    { value: "AVAILABLE", label: "Available" },
+    { value: "RESERVED", label: "Reserved" },
+    { value: "RENTED", label: "Rented" },
+    { value: "MAINTENANCE", label: "Maintenance" },
+    { value: "CLEANING", label: "Cleaning" },
+    { value: "OUT_OF_SERVICE", label: "Out of Service" },
+  ];
 
   return (
     <div className="space-y-4">
@@ -77,7 +78,7 @@ export function CarTable({
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
-            placeholder="Search by name, license plate, or brand..."
+            placeholder={t("carSearchPlaceholder")}
             value={search}
             onChange={(e) => onSearch(e.target.value)}
             className="pl-9"
@@ -85,7 +86,7 @@ export function CarTable({
         </div>
         <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
           <Filter className="h-4 w-4 mr-2" />
-          Filters
+          {t("filters")}
           {(statusFilter || brandFilter) && (
             <span className="ml-2 h-5 w-5 rounded-full bg-primary text-primary-foreground text-xs flex items-center justify-center">
               {(statusFilter ? 1 : 0) + (brandFilter ? 1 : 0)}
@@ -95,7 +96,7 @@ export function CarTable({
         <Link href="/admin/cars/new">
           <Button>
             <Plus className="h-4 w-4 mr-2" />
-            Add Car
+            {t("addCar")}
           </Button>
         </Link>
       </div>
@@ -104,7 +105,7 @@ export function CarTable({
       {showFilters && (
         <div className="flex flex-col sm:flex-row gap-3 p-4 rounded-lg border bg-muted/30">
           <div className="flex-1">
-            <label className="text-xs font-medium mb-1 block">Status</label>
+            <label className="text-xs font-medium mb-1 block">{t("statusLabel")}</label>
             <select
               value={statusFilter}
               onChange={(e) => onStatusFilter(e.target.value)}
@@ -118,7 +119,7 @@ export function CarTable({
           {(statusFilter || brandFilter) && (
             <div className="flex items-end">
               <Button variant="ghost" size="sm" onClick={() => { onStatusFilter(""); onBrandFilter(""); }}>
-                <X className="h-4 w-4 mr-1" /> Clear filters
+                <X className="h-4 w-4 mr-1" /> {t("clearFilters")}
               </Button>
             </div>
           )}
@@ -132,13 +133,13 @@ export function CarTable({
             <table className="w-full">
               <thead>
                 <tr className="border-b bg-muted/50">
-                  <th className="text-left p-4 text-sm font-medium">Car</th>
-                  <th className="text-left p-4 text-sm font-medium hidden md:table-cell">Category</th>
-                  <th className="text-left p-4 text-sm font-medium">Price/Day</th>
-                  <th className="text-left p-4 text-sm font-medium hidden sm:table-cell">Year</th>
-                  <th className="text-left p-4 text-sm font-medium">Status</th>
-                  <th className="text-left p-4 text-sm font-medium hidden lg:table-cell">Rating</th>
-                  <th className="text-right p-4 text-sm font-medium">Actions</th>
+                  <th className="text-left p-4 text-sm font-medium">{t("carColumn")}</th>
+                  <th className="text-left p-4 text-sm font-medium hidden md:table-cell">{t("categoryColumn")}</th>
+                  <th className="text-left p-4 text-sm font-medium">{t("pricePerDay")}</th>
+                  <th className="text-left p-4 text-sm font-medium hidden sm:table-cell">{t("yearColumn")}</th>
+                  <th className="text-left p-4 text-sm font-medium">{t("statusLabel")}</th>
+                  <th className="text-left p-4 text-sm font-medium hidden lg:table-cell">{t("ratingColumn")}</th>
+                  <th className="text-right p-4 text-sm font-medium">{t("actionsColumn")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -151,7 +152,7 @@ export function CarTable({
                 ) : cars.length === 0 ? (
                   <tr>
                     <td colSpan={7} className="p-8 text-center text-muted-foreground">
-                      No cars found
+                      {t("noCarsFound")}
                     </td>
                   </tr>
                 ) : (
@@ -163,7 +164,7 @@ export function CarTable({
                             {car.images[0] ? (
                               <img src={car.images[0].url} alt={car.name} className="h-full w-full object-cover" />
                             ) : (
-                              <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">No img</div>
+                              <div className="h-full w-full flex items-center justify-center text-xs text-muted-foreground">{t("noImg")}</div>
                             )}
                           </div>
                           <div className="min-w-0">
@@ -203,19 +204,19 @@ export function CarTable({
                           <DropdownMenuContent align="end">
                             <DropdownMenuItem>
                               <Link href={`/cars/${car.slug}`} target="_blank" className="flex items-center gap-2">
-                                <Eye className="h-4 w-4" /> View Public
+                                <Eye className="h-4 w-4" /> {t("viewPublic")}
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem>
                               <Link href={`/admin/cars/${car.id}`} className="flex items-center gap-2">
-                                <Pencil className="h-4 w-4" /> Edit
+                                <Pencil className="h-4 w-4" /> {t("edit")}
                               </Link>
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive"
                               onClick={() => onDelete(car.id)}
                             >
-                              <Trash2 className="h-4 w-4" /> Delete
+                              <Trash2 className="h-4 w-4" /> {t("delete")}
                             </DropdownMenuItem>
                           </DropdownMenuContent>
                         </DropdownMenu>
@@ -233,7 +234,7 @@ export function CarTable({
       {totalPages > 1 && (
         <div className="flex items-center justify-between">
           <p className="text-sm text-muted-foreground">
-            Showing {((page - 1) * 12) + 1}–{Math.min(page * 12, total)} of {total}
+            {t("showing")} {((page - 1) * 12) + 1}–{Math.min(page * 12, total)} {t("to")} {total}
           </p>
           <div className="flex items-center gap-2">
             <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => onPageChange(page - 1)}>

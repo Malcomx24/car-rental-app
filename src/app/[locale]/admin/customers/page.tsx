@@ -57,11 +57,11 @@ interface Stats {
 const ROLES = ["", "CUSTOMER", "ADMIN", "SUPER_ADMIN", "MANAGER", "EMPLOYEE"];
 
 const bookingStatusConfig: Record<string, { label: string; className: string }> = {
-  PENDING: { label: "Pending", className: "bg-yellow-100 text-yellow-800" },
-  CONFIRMED: { label: "Confirmed", className: "bg-blue-100 text-blue-800" },
+  PENDING: { label: "En attente", className: "bg-yellow-100 text-yellow-800" },
+  CONFIRMED: { label: "Confirmée", className: "bg-blue-100 text-blue-800" },
   ACTIVE: { label: "Active", className: "bg-green-100 text-green-800" },
-  COMPLETED: { label: "Completed", className: "bg-gray-100 text-gray-800" },
-  CANCELLED: { label: "Cancelled", className: "bg-red-100 text-red-800" },
+  COMPLETED: { label: "Terminée", className: "bg-gray-100 text-gray-800" },
+  CANCELLED: { label: "Annulée", className: "bg-red-100 text-red-800" },
 };
 
 export default function AdminCustomersPage() {
@@ -80,8 +80,8 @@ export default function AdminCustomersPage() {
 
   const roleConfig: Record<string, { label: string; className: string }> = {
     CUSTOMER: { label: t("customer"), className: "bg-blue-100 text-blue-800" },
-    ADMIN: { label: "Admin", className: "bg-purple-100 text-purple-800" },
-    SUPER_ADMIN: { label: "Super Admin", className: "bg-red-100 text-red-800" },
+    ADMIN: { label: "Administrateur", className: "bg-purple-100 text-purple-800" },
+    SUPER_ADMIN: { label: "Super Administrateur", className: "bg-red-100 text-red-800" },
     MANAGER: { label: "Manager", className: "bg-amber-100 text-amber-800" },
     EMPLOYEE: { label: "Employee", className: "bg-green-100 text-green-800" },
   };

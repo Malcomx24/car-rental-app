@@ -147,7 +147,7 @@ export async function PATCH(request: NextRequest, { params }: RouteParams) {
               bookingId: booking.id,
               userId: booking.userId,
               amount: booking.totalAmount,
-              currency: "USD",
+              currency: "MAD",
               status: "SUCCEEDED",
               description: `Payment confirmed — ${booking.paymentMethod || "Pay at Pickup"}`,
             },

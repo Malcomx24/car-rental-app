@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function SignInPage() {
   const router = useRouter();
+  const locale = useLocale();
   const { isLoaded: clerkLoaded, signIn, setActive } = useSignIn();
   const t = useTranslations("auth");
 
@@ -40,7 +41,7 @@ export default function SignInPage() {
         </div>
         <p className="text-center text-sm text-muted-foreground">
           {t("noAccount")}{" "}
-          <Link href="/sign-up" className="text-primary hover:underline font-medium">
+          <Link href={`/${locale}/sign-up`} className="text-primary hover:underline font-medium">
             {t("signUp")}
           </Link>
         </p>
@@ -104,7 +105,7 @@ export default function SignInPage() {
           console.log("[SignIn] Verification complete! Activating session:", result.createdSessionId);
           await setActive({ session: result.createdSessionId });
           console.log("[SignIn] Session activated. Redirecting to /dashboard");
-          router.replace("/dashboard");
+          router.replace(`/${locale}/dashboard`);
         } else {
           console.error("[SignIn] Status is complete but createdSessionId is missing");
           setError(t("sessionError"));
@@ -194,7 +195,7 @@ export default function SignInPage() {
           <Input
             id="email"
             type="email"
-            placeholder="you@example.com"
+            placeholder="votre@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -213,7 +214,7 @@ export default function SignInPage() {
 
       <p className="text-center text-sm text-muted-foreground">
         {t("noAccount")}{" "}
-        <Link href="/sign-up" className="text-primary hover:underline font-medium">
+        <Link href={`/${locale}/sign-up`} className="text-primary hover:underline font-medium">
           {t("signUp")}
         </Link>
       </p>

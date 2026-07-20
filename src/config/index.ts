@@ -1,6 +1,6 @@
 export const config = {
   app: {
-    name: process.env.NEXT_PUBLIC_APP_NAME || "DriveRent",
+    name: process.env.NEXT_PUBLIC_APP_NAME || "DriveRent Maroc",
     url: process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000",
     description:
       "Premium car rental service — rent luxury vehicles with ease.",

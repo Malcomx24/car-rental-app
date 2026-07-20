@@ -14,11 +14,11 @@ const geistMono = Geist_Mono({
 
 export const metadata: Metadata = {
   title: {
-    default: "DriveRent — Premium Car Rental",
-    template: "%s | DriveRent",
+    default: "DriveRent Maroc — Location de véhicules premium",
+    template: "%s | DriveRent Maroc",
   },
   description:
-    "Rent luxury and premium vehicles with ease. DriveRent offers the best car rental experience with top brands, flexible booking, and 24/7 support.",
+    "Louez des véhicules premium et de luxe en toute simplicité. DriveRent Maroc vous offre la meilleure expérience de location avec les meilleures marques, une réservation flexible et un support 24h/24.",
   robots: {
     index: true,
     follow: true,
@@ -31,7 +31,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
+    <html lang="fr" suppressHydrationWarning className={`${geistSans.variable} ${geistMono.variable}`}>
       <body className="min-h-full flex flex-col antialiased">
         {children}
       </body>

@@ -7,9 +7,10 @@ export const stripe = new Stripe(config.stripe.secretKey, {
 });
 
 export function formatAmountForDisplay(amount: number): string {
-  return new Intl.NumberFormat("en-US", {
+  return new Intl.NumberFormat("fr-MA", {
     style: "currency",
-    currency: "USD",
+    currency: "MAD",
+    maximumFractionDigits: 0,
   }).format(amount);
 }
 

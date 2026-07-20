@@ -36,7 +36,7 @@ export async function POST(request: NextRequest) {
           link: `/dashboard/notifications`,
           sendEmail: sendEmail === true,
           email: targetUser.email,
-          emailSubject: `DriveRent — ${title}`,
+          emailSubject: `DriveRent Maroc — ${title}`,
           emailHtml: `
             <!DOCTYPE html><html><head>
               <style>
@@ -51,7 +51,7 @@ export async function POST(request: NextRequest) {
               <div class="container">
                 <div class="header"><h1>${title}</h1></div>
                 <div class="content"><p>${message}</p></div>
-                <div class="footer"><p>DriveRent &copy; ${new Date().getFullYear()}</p></div>
+                <div class="footer"><p>DriveRent Maroc &copy; ${new Date().getFullYear()}</p></div>
               </div>
             </body></html>
           `,

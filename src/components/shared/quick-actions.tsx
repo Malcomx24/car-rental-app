@@ -3,52 +3,46 @@
 import Link from "next/link";
 import {
   Plus,
-  Car,
   CalendarDays,
-  UserPlus,
   FileText,
   Download,
   Wrench,
+  TrendingUp,
 } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { formatCurrency } from "@/lib/utils";
 
 const quickActions = [
   {
-    label: "Add New Car",
+    labelKey: "addCar" as const,
     href: "/admin/cars/new",
     icon: Plus,
     color: "text-emerald-500",
     bg: "bg-emerald-500/10 hover:bg-emerald-500/20",
   },
   {
-    label: "View Bookings",
+    labelKey: "viewBookings" as const,
     href: "/admin/bookings",
     icon: CalendarDays,
     color: "text-blue-500",
     bg: "bg-blue-500/10 hover:bg-blue-500/20",
   },
   {
-    label: "Add Customer",
-    href: "/admin/customers/new",
-    icon: UserPlus,
-    color: "text-violet-500",
-    bg: "bg-violet-500/10 hover:bg-violet-500/20",
-  },
-  {
-    label: "Generate Report",
+    labelKey: "generateReport" as const,
     href: "/admin/reports",
     icon: FileText,
     color: "text-amber-500",
     bg: "bg-amber-500/10 hover:bg-amber-500/20",
   },
   {
-    label: "Export Data",
+    labelKey: "exportData" as const,
     href: "/admin/reports?export=true",
     icon: Download,
     color: "text-cyan-500",
     bg: "bg-cyan-500/10 hover:bg-cyan-500/20",
   },
   {
-    label: "Maintenance",
+    labelKey: "maintenance" as const,
     href: "/admin/maintenance",
     icon: Wrench,
     color: "text-rose-500",
@@ -56,13 +50,51 @@ const quickActions = [
   },
 ];
 
-export function QuickActions() {
+interface QuickActionsProps {
+  metrics?: {
+    avgBookingValue: number;
+    occupancyRate: number;
+    revenuePerCar: number;
+    totalRevenue: number;
+  };
+}
+
+export function QuickActions({ metrics }: QuickActionsProps) {
+  const t = useTranslations("admin.quickActions");
+
   return (
     <div className="rounded-xl border bg-card p-6">
       <div className="mb-4">
-        <h3 className="text-lg font-semibold">Quick Actions</h3>
-        <p className="text-sm text-muted-foreground">Common tasks and shortcuts</p>
+        <h3 className="text-lg font-semibold">{t("title")}</h3>
+        <p className="text-sm text-muted-foreground">{t("subtitle")}</p>
       </div>
+
+      {/* Quick Metrics */}
+      {metrics && (
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-6">
+          <div className="rounded-lg bg-muted/50 p-3 text-center">
+            <p className="text-lg font-bold">{formatCurrency(metrics.avgBookingValue)}</p>
+            <p className="text-xs text-muted-foreground">{t("avgBookingValue")}</p>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3 text-center">
+            <p className="text-lg font-bold">{metrics.occupancyRate}%</p>
+            <p className="text-xs text-muted-foreground">{t("occupancyRate")}</p>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3 text-center">
+            <p className="text-lg font-bold">{formatCurrency(metrics.revenuePerCar)}</p>
+            <p className="text-xs text-muted-foreground">{t("revenuePerCar")}</p>
+          </div>
+          <div className="rounded-lg bg-muted/50 p-3 text-center">
+            <p className="text-lg font-bold flex items-center justify-center gap-1">
+              <TrendingUp className="h-4 w-4 text-emerald-500" />
+              {formatCurrency(metrics.totalRevenue)}
+            </p>
+            <p className="text-xs text-muted-foreground">{t("totalRevenue")}</p>
+          </div>
+        </div>
+      )}
+
+      {/* Action Links */}
       <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
         {quickActions.map((action) => {
           const Icon = action.icon;
@@ -73,7 +105,7 @@ export function QuickActions() {
               className={`flex flex-col items-center gap-2 rounded-xl p-4 text-center transition-all duration-200 ${action.bg}`}
             >
               <Icon className={`h-5 w-5 ${action.color}`} />
-              <span className="text-xs font-medium">{action.label}</span>
+              <span className="text-xs font-medium">{t(action.labelKey)}</span>
             </Link>
           );
         })}

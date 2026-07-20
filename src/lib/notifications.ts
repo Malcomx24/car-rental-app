@@ -13,6 +13,7 @@ import {
   payAtPickupConfirmationEmail,
   paymentStatusUpdateEmail,
 } from "./email-templates";
+import { formatCurrency } from "./utils";
 
 export type NotificationType = "INFO" | "SUCCESS" | "WARNING" | "ERROR";
 
@@ -94,16 +95,26 @@ export async function notifyBookingConfirmed(booking: {
   const carName = `${booking.car.brand.name} ${booking.car.name}`;
   const dashboardUrl = `${APP_URL}/dashboard/bookings/${booking.id}`;
 
+  let bankDetails = { bankName: "", accountHolder: "", iban: "", swiftCode: "", instructions: "" };
+  if (booking.paymentMethod === "BANK_TRANSFER") {
+    try {
+      const setting = await db.setting.findFirst({
+        where: { key: "bank_payment_settings", category: "PAYMENT" },
+      });
+      if (setting) bankDetails = JSON.parse(setting.value);
+    } catch {}
+  }
+
   await createNotification({
     userId: user.id,
-    title: "Booking Confirmed",
-    message: `Your booking #${booking.bookingNumber} for ${carName} has been confirmed.`,
+    title: "Réservation confirmée",
+    message: `Votre réservation #${booking.bookingNumber} pour ${carName} a été confirmée.`,
     type: "SUCCESS",
     link: dashboardUrl,
     prefKey: "booking",
     sendEmail: true,
     email: user.email,
-    emailSubject: `DriveRent — Booking #${booking.bookingNumber} Confirmed`,
+    emailSubject: `DriveRent Maroc — Réservation #${booking.bookingNumber} confirmée`,
     emailHtml: booking.paymentMethod === "BANK_TRANSFER"
       ? bankTransferConfirmationEmail({
           customerName: user.firstName,
@@ -113,9 +124,11 @@ export async function notifyBookingConfirmed(booking: {
           returnDate: booking.returnDate.toISOString(),
           pickupLocation: booking.pickupLocation.name,
           totalAmount: Number(booking.totalAmount),
-          bankName: "DriveRent Bank",
-          accountHolder: "DriveRent LLC",
-          iban: "US12 3456 7890 1234 5678 90",
+          bankName: bankDetails.bankName || "Attijariwafa Bank",
+          accountHolder: bankDetails.accountHolder || "AutoOS SARL",
+          iban: bankDetails.iban || "",
+          swiftCode: bankDetails.swiftCode || undefined,
+          instructions: bankDetails.instructions || "Veuillez effectuer le virement en indiquant votre numéro de réservation dans le motif du paiement.",
           dashboardUrl,
         })
       : payAtPickupConfirmationEmail({
@@ -144,14 +157,14 @@ export async function notifyBookingCancelled(booking: {
 
   await createNotification({
     userId: user.id,
-    title: "Booking Cancelled",
-    message: `Your booking #${booking.bookingNumber} for ${carName} has been cancelled.`,
+    title: "Réservation annulée",
+    message: `Votre réservation #${booking.bookingNumber} pour ${carName} a été annulée.`,
     type: "WARNING",
     link: `${APP_URL}/dashboard/bookings/${booking.id}`,
     prefKey: "booking",
     sendEmail: true,
     email: user.email,
-    emailSubject: `DriveRent — Booking #${booking.bookingNumber} Cancelled`,
+    emailSubject: `DriveRent Maroc — Réservation #${booking.bookingNumber} annulée`,
     emailHtml: bookingCancelledEmail({
       customerName: user.firstName,
       bookingNumber: booking.bookingNumber,
@@ -172,8 +185,8 @@ export async function notifyBookingActive(booking: {
 
   await createNotification({
     userId: user.id,
-    title: "Rental Started",
-    message: `Your rental for ${booking.car.brand.name} ${booking.car.name} (#${booking.bookingNumber}) is now active. Enjoy your ride!`,
+    title: "Location démarrée",
+    message: `Votre location du ${booking.car.brand.name} ${booking.car.name} (#${booking.bookingNumber}) est maintenant active. Profitez de votre trajet !`,
     type: "SUCCESS",
     link: `${APP_URL}/dashboard/bookings/${booking.id}`,
     prefKey: "booking",
@@ -194,14 +207,14 @@ export async function notifyBookingCompleted(booking: {
 
   await createNotification({
     userId: user.id,
-    title: "Rental Completed",
-    message: `Your rental for ${carName} (#${booking.bookingNumber}) has been completed. We'd love your feedback!`,
+    title: "Location terminée",
+    message: `Votre location du ${carName} (#${booking.bookingNumber}) est terminée. Nous apprécions vos retours !`,
     type: "INFO",
     link: `${APP_URL}/cars/${booking.carId}`,
     prefKey: "review",
     sendEmail: true,
     email: user.email,
-    emailSubject: `DriveRent — How was your ${carName}?`,
+    emailSubject: `DriveRent Maroc — Comment s'est passée votre ${carName} ?`,
     emailHtml: reviewRequestEmail({
       customerName: user.firstName,
       carName,
@@ -228,14 +241,14 @@ export async function notifyPaymentReceived(booking: {
 
   await createNotification({
     userId: user.id,
-    title: "Payment Received",
-    message: `Payment of $${Number(booking.totalAmount).toFixed(2)} received for booking #${booking.bookingNumber}.`,
+    title: "Paiement reçu",
+    message: `Paiement de ${formatCurrency(Number(booking.totalAmount))} reçu pour la réservation #${booking.bookingNumber}.`,
     type: "SUCCESS",
     link: `${APP_URL}/dashboard/invoices`,
     prefKey: "payment",
     sendEmail: true,
     email: user.email,
-    emailSubject: `DriveRent — Payment Receipt for #${booking.bookingNumber}`,
+    emailSubject: `DriveRent Maroc — Reçu de paiement pour #${booking.bookingNumber}`,
     emailHtml: paymentReceiptEmail({
       customerName: user.firstName,
       bookingNumber: booking.bookingNumber,
@@ -252,13 +265,13 @@ export async function notifyPaymentReceived(booking: {
 export async function notifyWelcome(user: { id: string; firstName: string; email: string }) {
   await createNotification({
     userId: user.id,
-    title: "Welcome to DriveRent!",
-    message: `Hi ${user.firstName}, welcome to DriveRent! Browse our premium fleet and make your first booking.`,
+    title: "Bienvenue chez DriveRent Maroc !",
+    message: `Bonjour ${user.firstName}, bienvenue chez DriveRent Maroc ! Parcourez notre flotte et effectuez votre première réservation.`,
     type: "SUCCESS",
     link: `${APP_URL}/cars`,
     sendEmail: true,
     email: user.email,
-    emailSubject: "Welcome to DriveRent — Your Premium Car Rental Experience",
+    emailSubject: "Bienvenue chez DriveRent Maroc — Votre expérience de location premium",
     emailHtml: welcomeEmail({
       customerName: user.firstName,
       dashboardUrl: `${APP_URL}/dashboard`,
@@ -284,8 +297,8 @@ export async function notifyAdminNewBooking(booking: {
   for (const admin of admins) {
     await createNotification({
       userId: admin.id,
-      title: "New Booking",
-      message: `New booking #${booking.bookingNumber} by ${customer?.firstName} ${customer?.lastName} for ${carName}. Total: $${Number(booking.totalAmount).toFixed(2)}.`,
+      title: "Nouvelle réservation",
+      message: `Nouvelle réservation #${booking.bookingNumber} par ${customer?.firstName} ${customer?.lastName} pour ${carName}. Total : ${formatCurrency(Number(booking.totalAmount))}.`,
       type: "INFO",
       link: `${APP_URL}/admin/bookings`,
       prefKey: "admin",
@@ -303,22 +316,22 @@ export async function notifyPaymentStatusChanged(booking: {
   if (!user) return;
 
   const statusLabels: Record<string, string> = {
-    SUCCEEDED: "confirmed",
-    FAILED: "failed",
-    AWAITING_TRANSFER: "awaiting transfer",
-    REFUNDED: "refunded",
+    SUCCEEDED: "confirmé",
+    FAILED: "échoué",
+    AWAITING_TRANSFER: "en attente de virement",
+    REFUNDED: "remboursé",
   };
 
   await createNotification({
     userId: user.id,
-    title: `Payment ${statusLabels[booking.paymentStatus] || booking.paymentStatus}`,
-    message: `Your payment for booking #${booking.bookingNumber} has been ${statusLabels[booking.paymentStatus] || booking.paymentStatus}.`,
+    title: `Paiement ${statusLabels[booking.paymentStatus] || booking.paymentStatus}`,
+    message: `Votre paiement pour la réservation #${booking.bookingNumber} a été ${statusLabels[booking.paymentStatus] || booking.paymentStatus}.`,
     type: booking.paymentStatus === "SUCCEEDED" ? "SUCCESS" : booking.paymentStatus === "FAILED" ? "ERROR" : "INFO",
     link: `${APP_URL}/dashboard/bookings/${booking.id}`,
     prefKey: "payment",
     sendEmail: true,
     email: user.email,
-    emailSubject: `DriveRent — Payment Update for #${booking.bookingNumber}`,
+    emailSubject: `DriveRent Maroc — Mise à jour du paiement pour #${booking.bookingNumber}`,
     emailHtml: paymentStatusUpdateEmail({
       customerName: user.firstName,
       bookingNumber: booking.bookingNumber,

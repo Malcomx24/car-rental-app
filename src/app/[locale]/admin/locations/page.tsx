@@ -435,7 +435,7 @@ export default function AdminLocationsPage() {
                 <Input
                   value={form.city}
                   onChange={(e) => setForm((p) => ({ ...p, city: e.target.value }))}
-                  placeholder="e.g. New York"
+                  placeholder="e.g. Casablanca"
                   className="mt-1"
                 />
                 {errors.city && <p className="text-xs text-destructive mt-1">{errors.city}</p>}
@@ -445,7 +445,7 @@ export default function AdminLocationsPage() {
                 <Input
                   value={form.state}
                   onChange={(e) => setForm((p) => ({ ...p, state: e.target.value }))}
-                  placeholder="e.g. NY"
+                  placeholder="e.g. Casablanca-Settat"
                   className="mt-1"
                 />
                 {errors.state && <p className="text-xs text-destructive mt-1">{errors.state}</p>}
@@ -478,7 +478,7 @@ export default function AdminLocationsPage() {
                 <Input
                   value={form.phone}
                   onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
-                  placeholder="e.g. +1 (212) 555-0101"
+                  placeholder="e.g. +212 522 12 34 56"
                   className="mt-1"
                 />
                 {errors.phone && <p className="text-xs text-destructive mt-1">{errors.phone}</p>}

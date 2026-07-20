@@ -186,7 +186,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                 { icon: <Settings2 className="h-5 w-5" />, label: t("specTransmission"), value: car.transmission.replace("_", " ") },
                 { icon: <Users className="h-5 w-5" />, label: t("specSeats"), value: `${car.seats} ${t("specSeatsValue")}` },
                 { icon: <Palette className="h-5 w-5" />, label: t("specColor"), value: car.color },
-                { icon: <Gauge className="h-5 w-5" />, label: t("specMileage"), value: `${car.mileage.toLocaleString()} mi` },
+                { icon: <Gauge className="h-5 w-5" />, label: t("specMileage"), value: `${car.mileage.toLocaleString("fr-MA")} km` },
               ].map((spec) => (
                 <Card key={spec.label}>
                   <CardContent className="p-4 text-center">

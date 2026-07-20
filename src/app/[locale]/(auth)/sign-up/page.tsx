@@ -8,10 +8,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 
 export default function SignUpPage() {
   const router = useRouter();
+  const locale = useLocale();
   const { isLoaded: clerkLoaded, signUp, setActive } = useSignUp();
   const t = useTranslations("auth");
 
@@ -43,7 +44,7 @@ export default function SignUpPage() {
         </div>
         <p className="text-center text-sm text-muted-foreground">
           {t("alreadyHaveAccount")}{" "}
-          <Link href="/sign-in" className="text-primary hover:underline font-medium">
+          <Link href={`/${locale}/sign-in`} className="text-primary hover:underline font-medium">
             {t("signIn")}
           </Link>
         </p>
@@ -79,7 +80,7 @@ export default function SignUpPage() {
       if (createResult.status === "complete") {
         console.log("[SignUp] Sign-up already complete. Session:", createResult.createdSessionId);
         await setActive({ session: createResult.createdSessionId });
-        router.replace("/dashboard");
+        router.replace(`/${locale}/dashboard`);
         return;
       }
 
@@ -122,7 +123,7 @@ export default function SignUpPage() {
           console.log("[SignUp] Verification complete! Activating session:", result.createdSessionId);
           await setActive({ session: result.createdSessionId });
           console.log("[SignUp] Session activated. Redirecting to /dashboard");
-          router.replace("/dashboard");
+          router.replace(`/${locale}/dashboard`);
         } else {
           console.error("[SignUp] Status is complete but createdSessionId is missing");
           setError(t("accountCreatedSessionError"));
@@ -238,7 +239,7 @@ export default function SignUpPage() {
           <Input
             id="email"
             type="email"
-            placeholder="you@example.com"
+            placeholder="votre@email.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required

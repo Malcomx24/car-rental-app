@@ -1,4 +1,4 @@
-export const APP_NAME = "DriveRent";
+export const APP_NAME = "DriveRent Maroc";
 export const APP_DESCRIPTION = "Premium car rental service — rent luxury vehicles with ease.";
 export const APP_URL = process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 

@@ -16,7 +16,7 @@ export function StatCard({
   title,
   value,
   change,
-  changeLabel = "vs last month",
+  changeLabel,
   icon,
   description,
 }: StatCardProps) {
@@ -44,7 +44,9 @@ export function StatCard({
                 {isPositive ? "+" : ""}
                 {change}%
               </span>
-              <span className="text-xs text-muted-foreground">{changeLabel}</span>
+              {changeLabel && (
+                <span className="text-xs text-muted-foreground">{changeLabel}</span>
+              )}
             </div>
           )}
           {description && (

@@ -3,7 +3,7 @@ import { config } from "@/config";
 
 export const resend = new Resend(config.resend.apiKey);
 
-export const FROM_EMAIL = "DriveRent <notifications@driverent.com>";
+export const FROM_EMAIL = "DriveRent Maroc <notifications@driverent.ma>";
 
 interface SendEmailOptions {
   to: string;
@@ -24,7 +24,7 @@ export async function sendEmail({ to, subject, html, replyTo }: SendEmailOptions
       to,
       subject,
       html,
-      replyTo: replyTo || "support@driverent.com",
+      replyTo: replyTo || "contact@driverent.ma",
     });
 
     return { success: true };

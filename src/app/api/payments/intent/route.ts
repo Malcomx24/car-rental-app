@@ -46,7 +46,7 @@ export async function POST(request: NextRequest) {
 
     const paymentIntent = await stripe.paymentIntents.create({
       amount: amountInCents,
-      currency: "usd",
+      currency: "mad",
       automatic_payment_methods: { enabled: true },
       metadata: {
         bookingId: booking.id,
@@ -61,10 +61,10 @@ export async function POST(request: NextRequest) {
         bookingId: booking.id,
         userId: user.id,
         amount: totalAmount,
-        currency: "USD",
+        currency: "MAD",
         status: "PENDING",
         stripePaymentIntentId: paymentIntent.id,
-        description: `Payment for booking #${booking.bookingNumber}`,
+        description: `Paiement pour la réservation #${booking.bookingNumber}`,
       },
     });
 

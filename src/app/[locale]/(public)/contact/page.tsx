@@ -21,9 +21,9 @@ export default function ContactPage() {
   const t = useTranslations("contact");
 
   const CONTACT_INFO = [
-    { icon: Phone, label: t("info.phone.label"), value: "(+212) 679844325", description: t("info.phone.description") },
-    { icon: Mail, label: t("info.email.label"), value: "zeussan1973@gmail.com", description: t("info.email.description") },
-    { icon: MapPin, label: t("info.headquarters.label"), value: "Tarrast Inzegane, Agadir ", description: "" },
+    { icon: Phone, label: t("info.phone.label"), value: "+212 661 23 45 67", description: t("info.phone.description") },
+    { icon: Mail, label: t("info.email.label"), value: "contact@driverent.ma", description: t("info.email.description") },
+    { icon: MapPin, label: t("info.headquarters.label"), value: "Boulevard Mohammed V, Agadir, Maroc", description: "" },
     { icon: Clock, label: t("info.hours.label"), value: t("info.hours.value"), description: t("info.hours.description") },
   ];
 
@@ -123,7 +123,7 @@ export default function ContactPage() {
                         <Label htmlFor="name">{t("form.fullName")}</Label>
                         <Input
                           id="name"
-                          placeholder="John Doe"
+                          placeholder="Mohamed Alaoui"
                           value={form.name}
                           onChange={(e) => setForm((p) => ({ ...p, name: e.target.value }))}
                           required
@@ -134,7 +134,7 @@ export default function ContactPage() {
                         <Input
                           id="email"
                           type="email"
-                          placeholder="john@example.com"
+                          placeholder="mohamed@exemple.com"
                           value={form.email}
                           onChange={(e) => setForm((p) => ({ ...p, email: e.target.value }))}
                           required
@@ -148,7 +148,7 @@ export default function ContactPage() {
                         <Input
                           id="phone"
                           type="tel"
-                          placeholder="+1 (555) 000-0000"
+                          placeholder="+212 661 23 45 67"
                           value={form.phone}
                           onChange={(e) => setForm((p) => ({ ...p, phone: e.target.value }))}
                         />

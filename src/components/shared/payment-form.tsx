@@ -79,7 +79,7 @@ function CheckoutForm({ bookingId, amount, onSuccess }: { bookingId: string; amo
         ) : (
           <CreditCard className="h-4 w-4 mr-2" />
         )}
-        Pay ${amount.toFixed(2)}
+        Payer ${amount.toLocaleString("fr-MA")} MAD
       </Button>
     </form>
   );

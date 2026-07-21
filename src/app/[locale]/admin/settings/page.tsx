@@ -167,9 +167,11 @@ export default function AdminSettingsPage() {
 
   const handleSavePayment = async () => {
     if (!bankName.trim() || !accountHolder.trim() || !iban.trim()) {
+      console.error("[Payment Save] Validation failed:", { bankName, accountHolder, iban });
       toast.error(t("failedToSaveSettings"));
       return;
     }
+    console.log("[Payment Save] Starting save...", { bankName, accountHolder, iban, swiftCode, instructions });
     setSavingPayment(true);
     try {
       const res = await fetch("/api/admin/settings/payment", {
@@ -178,6 +180,7 @@ export default function AdminSettingsPage() {
         body: JSON.stringify({ bankName, accountHolder, iban, swiftCode, instructions }),
       });
       const json = await res.json();
+      console.log("[Payment Save] API response:", { status: res.status, json });
       if (json.success) {
         setInitialPayment({ bankName, accountHolder, iban, swiftCode, instructions });
         setPaymentDirty(false);
@@ -187,7 +190,8 @@ export default function AdminSettingsPage() {
       } else {
         toast.error(json.error || t("failedToSaveSettings"));
       }
-    } catch {
+    } catch (err) {
+      console.error("[Payment Save] Fetch error:", err);
       toast.error(t("failedToSaveSettings"));
     } finally {
       setSavingPayment(false);

@@ -5,12 +5,19 @@ export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-export function formatCurrency(amount: number, currency = "MAD", locale = "fr-MA"): string {
+export function formatCurrency(
+  amount: number | string | null | undefined,
+  currency = "MAD",
+  locale = "fr-MA",
+): string {
+  const num =
+    typeof amount === "number" ? amount : parseFloat(String(amount ?? 0));
+  const safe = Number.isFinite(num) ? num : 0;
   return new Intl.NumberFormat(locale, {
     style: "currency",
     currency,
     maximumFractionDigits: 0,
-  }).format(amount);
+  }).format(safe);
 }
 
 export function formatDate(date: Date | string): string {
@@ -60,7 +67,7 @@ export function getInitials(name: string): string {
 
 export function calculateDaysBetween(
   startDate: Date | string,
-  endDate: Date | string
+  endDate: Date | string,
 ): number {
   const start = new Date(startDate);
   const end = new Date(endDate);
@@ -68,6 +75,8 @@ export function calculateDaysBetween(
   return Math.ceil(diffTime / (1000 * 60 * 60 * 24));
 }
 
-export function classNames(...classes: (string | boolean | undefined | null)[]): string {
+export function classNames(
+  ...classes: (string | boolean | undefined | null)[]
+): string {
   return classes.filter(Boolean).join(" ");
 }

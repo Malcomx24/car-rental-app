@@ -7,12 +7,20 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Badge } from "@/components/ui/badge";
 import { formatCurrency, formatDate } from "@/lib/utils";
 import { EXTRAS } from "@/lib/constants";
 import {
-  ArrowLeft, ArrowRight, Calendar, MapPin, Shield, CreditCard,
-  CheckCircle, Loader2, Car, Info, ChevronRight,
+  ArrowLeft,
+  ArrowRight,
+  Calendar,
+  MapPin,
+  Shield,
+  CreditCard,
+  CheckCircle,
+  Loader2,
+  Car,
+  Info,
+  ChevronRight,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -40,7 +48,6 @@ interface AvailabilityResult {
   totalDays: number;
   pricePerDay: number;
   subtotal: number;
-  taxAmount: number;
   total: number;
   securityDeposit: number;
 }
@@ -51,7 +58,11 @@ interface BookingResult {
   totalAmount: number;
 }
 
-export default function BookingFlowPage({ params }: { params: Promise<{ id: string }> }) {
+export default function BookingFlowPage({
+  params,
+}: {
+  params: Promise<{ id: string }>;
+}) {
   const t = useTranslations("booking");
   const router = useRouter();
   const [step, setStep] = useState(0);
@@ -60,18 +71,29 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
   const [loading, setLoading] = useState(true);
   const [submitting, setSubmitting] = useState(false);
 
-  // Form state
   const [pickupLocationId, setPickupLocationId] = useState("");
   const [dropoffLocationId, setDropoffLocationId] = useState("");
   const [pickupDate, setPickupDate] = useState("");
   const [returnDate, setReturnDate] = useState("");
-  const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
-  const [notes, setNotes] = useState("");
-  const [availability, setAvailability] = useState<AvailabilityResult | null>(null);
-  const [checkingAvailability, setCheckingAvailability] = useState(false);
-  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<"PAY_AT_PICKUP" | "BANK_TRANSFER">("PAY_AT_PICKUP");
 
-  const STEPS = [t("stepDates"), t("stepExtras"), t("stepPayment"), t("stepReview")];
+  const [selectedExtras, setSelectedExtras] = useState<string[]>([]);
+  const [selectedPaymentMethod, setSelectedPaymentMethod] = useState<
+    "PAY_AT_PICKUP" | "BANK_TRANSFER"
+  >("PAY_AT_PICKUP");
+  const [phone, setPhone] = useState("");
+  const [pickupTime, setPickupTime] = useState("10:00");
+
+  const [availability, setAvailability] = useState<AvailabilityResult | null>(
+    null,
+  );
+  const [checkingAvailability, setCheckingAvailability] = useState(false);
+
+  const STEPS = [
+    t("stepDates"),
+    t("stepExtras"),
+    t("stepPayment"),
+    t("stepReview"),
+  ];
 
   useEffect(() => {
     params.then(async ({ id }) => {
@@ -96,12 +118,8 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
     if (!car || !pickupDate || !returnDate) return;
     setCheckingAvailability(true);
     try {
-      const params = new URLSearchParams({
-        carId: car.id,
-        pickupDate,
-        returnDate,
-      });
-      const res = await fetch(`/api/bookings/availability?${params.toString()}`);
+      const p = new URLSearchParams({ carId: car.id, pickupDate, returnDate });
+      const res = await fetch(`/api/bookings/availability?${p.toString()}`);
       const json = await res.json();
       if (json.success) setAvailability(json.data);
     } catch (err) {
@@ -117,7 +135,7 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
 
   const toggleExtra = (id: string) => {
     setSelectedExtras((prev) =>
-      prev.includes(id) ? prev.filter((e) => e !== id) : [...prev, id]
+      prev.includes(id) ? prev.filter((e) => e !== id) : [...prev, id],
     );
   };
 
@@ -145,14 +163,19 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
           carId: car.id,
           pickupLocationId,
           dropoffLocationId,
-          pickupDate,
-          returnDate,
+          pickupDate: `${pickupDate}T${pickupTime}:00`,
+          returnDate: `${returnDate}T${pickupTime}:00`,
           extras: selectedExtras.map((id) => {
             const extra = EXTRAS.find((e) => e.id === id)!;
-            return { name: extra.name, description: extra.description, pricePerDay: extra.pricePerDay, quantity: 1 };
+            return {
+              name: extra.name,
+              description: extra.description,
+              pricePerDay: extra.pricePerDay,
+              quantity: 1,
+            };
           }),
-          notes,
           paymentMethod: selectedPaymentMethod,
+          phone: phone.trim(),
         }),
       });
 
@@ -183,12 +206,19 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
     return (
       <div className="min-h-screen flex flex-col items-center justify-center gap-4">
         <p className="text-xl font-medium">{t("carNotFound")}</p>
-        <Link href="/cars"><Button variant="outline">{t("browseCars")}</Button></Link>
+        <Link href="/cars">
+          <Button variant="outline">{t("browseCars")}</Button>
+        </Link>
       </div>
     );
   }
 
-  const isDatesStepValid = pickupLocationId && dropoffLocationId && pickupDate && returnDate && availability?.available;
+  const isDatesStepValid =
+    pickupLocationId &&
+    dropoffLocationId &&
+    pickupDate &&
+    returnDate &&
+    availability?.available;
 
   return (
     <div className="min-h-screen bg-muted/30">
@@ -196,19 +226,32 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
       <div className="border-b bg-background">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
-            <Link href={`/cars/${car.id}`} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors">
+            <Link
+              href={`/cars/${car.id}`}
+              className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors"
+            >
               <ArrowLeft className="h-4 w-4" /> {t("backToCar")}
             </Link>
             <div className="flex items-center gap-2">
               {STEPS.map((s, i) => (
                 <div key={s} className="flex items-center gap-2">
-                  <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-medium ${
-                    i <= step ? "bg-primary text-primary-foreground" : "bg-muted text-muted-foreground"
-                  }`}>
+                  <div
+                    className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-medium ${
+                      i <= step
+                        ? "bg-primary text-primary-foreground"
+                        : "bg-muted text-muted-foreground"
+                    }`}
+                  >
                     {i < step ? <CheckCircle className="h-4 w-4" /> : i + 1}
                   </div>
-                  <span className={`text-sm hidden sm:inline ${i === step ? "font-medium" : "text-muted-foreground"}`}>{s}</span>
-                  {i < STEPS.length - 1 && <ChevronRight className="h-3 w-3 text-muted-foreground" />}
+                  <span
+                    className={`text-sm hidden sm:inline ${i === step ? "font-medium" : "text-muted-foreground"}`}
+                  >
+                    {s}
+                  </span>
+                  {i < STEPS.length - 1 && (
+                    <ChevronRight className="h-3 w-3 text-muted-foreground" />
+                  )}
                 </div>
               ))}
             </div>
@@ -220,11 +263,13 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
           {/* Main Content */}
           <div className="lg:col-span-2">
-            {/* Step 0: Dates */}
+            {/* Step 0: Dates & Locations */}
             {step === 0 && (
               <Card>
                 <CardContent className="p-6 space-y-5">
-                  <h2 className="text-xl font-semibold flex items-center gap-2"><Calendar className="h-5 w-5" /> {t("selectDatesTitle")}</h2>
+                  <h2 className="text-xl font-semibold flex items-center gap-2">
+                    <Calendar className="h-5 w-5" /> {t("selectDatesTitle")}
+                  </h2>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                     <div>
@@ -232,11 +277,13 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
                       <select
                         value={pickupLocationId}
                         onChange={(e) => setPickupLocationId(e.target.value)}
-                        className="w-full h-10 rounded-md border bg-background px-3 text-sm mt-1"
+                        className="w-full h-10 rounded-md border border-input bg-transparent px-3 text-sm text-foreground focus:border-ring focus:ring-3 focus:ring-ring/50 outline-none dark:bg-input/30 dark:hover:bg-input/50 mt-1"
                       >
                         <option value="">{t("selectLocation")}</option>
                         {locations.map((l) => (
-                          <option key={l.id} value={l.id}>{l.name} — {l.city}</option>
+                          <option key={l.id} value={l.id}>
+                            {l.name} — {l.city}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -245,11 +292,13 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
                       <select
                         value={dropoffLocationId}
                         onChange={(e) => setDropoffLocationId(e.target.value)}
-                        className="w-full h-10 rounded-md border bg-background px-3 text-sm mt-1"
+                        className="w-full h-10 rounded-md border border-input bg-transparent px-3 text-sm text-foreground focus:border-ring focus:ring-3 focus:ring-ring/50 outline-none dark:bg-input/30 dark:hover:bg-input/50 mt-1"
                       >
                         <option value="">{t("selectLocation")}</option>
                         {locations.map((l) => (
-                          <option key={l.id} value={l.id}>{l.name} — {l.city}</option>
+                          <option key={l.id} value={l.id}>
+                            {l.name} — {l.city}
+                          </option>
                         ))}
                       </select>
                     </div>
@@ -268,17 +317,33 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
                       <Input
                         type="date"
                         value={returnDate}
-                        min={pickupDate || new Date().toISOString().split("T")[0]}
+                        min={
+                          pickupDate || new Date().toISOString().split("T")[0]
+                        }
                         onChange={(e) => setReturnDate(e.target.value)}
                         className="mt-1"
                       />
                     </div>
+                    <div>
+                      <Label>Pickup Time</Label>
+                      <Input
+                        type="time"
+                        value={pickupTime}
+                        onChange={(e) => setPickupTime(e.target.value)}
+                        className="mt-1"
+                      />
+                    </div>
+                    <div className="flex items-end pb-1">
+                      <p className="text-xs text-muted-foreground">
+                        Return time matches pickup time ({pickupTime})
+                      </p>
+                    </div>
                   </div>
 
-                  {/* Availability Status */}
                   {checkingAvailability && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                      <Loader2 className="h-4 w-4 animate-spin" /> {t("checkingAvailability")}
+                      <Loader2 className="h-4 w-4 animate-spin" />{" "}
+                      {t("checkingAvailability")}
                     </div>
                   )}
                   {availability && !availability.available && (
@@ -301,8 +366,12 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
             {step === 1 && (
               <Card>
                 <CardContent className="p-6 space-y-5">
-                  <h2 className="text-xl font-semibold flex items-center gap-2"><Shield className="h-5 w-5" /> {t("optionalAddons")}</h2>
-                  <p className="text-sm text-muted-foreground">{t("enhanceExperience")}</p>
+                  <h2 className="text-xl font-semibold flex items-center gap-2">
+                    <Shield className="h-5 w-5" /> {t("optionalAddons")}
+                  </h2>
+                  <p className="text-sm text-muted-foreground">
+                    {t("enhanceExperience")}
+                  </p>
 
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                     {EXTRAS.map((extra) => {
@@ -320,16 +389,24 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
                           <div className="flex items-start justify-between">
                             <div>
                               <p className="font-medium">{extra.name}</p>
-                              <p className="text-xs text-muted-foreground mt-0.5">{extra.description}</p>
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                {extra.description}
+                              </p>
                             </div>
-                            <div className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors ${
-                              isSelected ? "border-primary bg-primary" : "border-muted-foreground/30"
-                            }`}>
-                              {isSelected && <CheckCircle className="h-3 w-3 text-primary-foreground" />}
+                            <div
+                              className={`h-5 w-5 rounded-full border-2 flex items-center justify-center transition-colors ${
+                                isSelected
+                                  ? "border-primary bg-primary"
+                                  : "border-muted-foreground/30"
+                              }`}
+                            >
+                              {isSelected && (
+                                <CheckCircle className="h-3 w-3 text-primary-foreground" />
+                              )}
                             </div>
                           </div>
                           <p className="text-sm font-semibold text-primary mt-2">
-                            +${extra.pricePerDay}/{t("day")}
+                            +{formatCurrency(extra.pricePerDay)}/{t("day")}
                           </p>
                         </button>
                       );
@@ -355,14 +432,24 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                        selectedPaymentMethod === "PAY_AT_PICKUP" ? "border-blue-600" : "border-gray-300"
-                      }`}>
-                        {selectedPaymentMethod === "PAY_AT_PICKUP" && <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                          selectedPaymentMethod === "PAY_AT_PICKUP"
+                            ? "border-blue-600"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {selectedPaymentMethod === "PAY_AT_PICKUP" && (
+                          <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+                        )}
                       </div>
                       <div>
-                        <div className="font-semibold text-sm">{t("payAtPickup")}</div>
-                        <p className="text-xs text-gray-500 mt-1">{t("payAtPickupDesc")}</p>
+                        <div className="font-semibold text-sm">
+                          {t("payAtPickup")}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {t("payAtPickupDesc")}
+                        </p>
                       </div>
                     </div>
                   </button>
@@ -377,14 +464,24 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
-                        selectedPaymentMethod === "BANK_TRANSFER" ? "border-blue-600" : "border-gray-300"
-                      }`}>
-                        {selectedPaymentMethod === "BANK_TRANSFER" && <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />}
+                      <div
+                        className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
+                          selectedPaymentMethod === "BANK_TRANSFER"
+                            ? "border-blue-600"
+                            : "border-gray-300"
+                        }`}
+                      >
+                        {selectedPaymentMethod === "BANK_TRANSFER" && (
+                          <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+                        )}
                       </div>
                       <div>
-                        <div className="font-semibold text-sm">{t("bankTransfer")}</div>
-                        <p className="text-xs text-gray-500 mt-1">{t("bankTransferDesc")}</p>
+                        <div className="font-semibold text-sm">
+                          {t("bankTransfer")}
+                        </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {t("bankTransferDesc")}
+                        </p>
                       </div>
                     </div>
                   </button>
@@ -412,49 +509,92 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
             {step === 3 && (
               <Card>
                 <CardContent className="p-6 space-y-5">
-                  <h2 className="text-xl font-semibold">{t("reviewBooking")}</h2>
+                  <h2 className="text-xl font-semibold">
+                    {t("reviewBooking")}
+                  </h2>
 
                   {/* Car Summary */}
                   <div className="flex gap-4 p-4 rounded-xl bg-muted/50">
                     <div className="h-20 w-28 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                       {car.images[0] ? (
-                        <img src={car.images[0].url} alt={car.name} className="h-full w-full object-cover" />
+                        <img
+                          src={car.images[0].url}
+                          alt={car.name}
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
-                        <div className="h-full w-full flex items-center justify-center"><Car className="h-6 w-6 text-muted-foreground" /></div>
+                        <div className="h-full w-full flex items-center justify-center">
+                          <Car className="h-6 w-6 text-muted-foreground" />
+                        </div>
                       )}
                     </div>
                     <div>
-                      <p className="font-semibold">{car.brand.name} {car.name}</p>
-                      <p className="text-sm text-muted-foreground">{car.year} &middot; {car.category.name}</p>
+                      <p className="font-semibold">
+                        {car.brand.name} {car.name}
+                      </p>
+                      <p className="text-sm text-muted-foreground">
+                        {car.year} &middot; {car.category.name}
+                      </p>
+                      {availability && (
+                        <p className="text-sm font-medium text-primary mt-1">
+                          {formatCurrency(availability.pricePerDay)}{" "}
+                          {t("perDay")} &middot; {availability.totalDays}{" "}
+                          {availability.totalDays > 1 ? t("days") : t("day")}
+                        </p>
+                      )}
                     </div>
                   </div>
 
-                  {/* Dates */}
+                  {/* Rental Details */}
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
                       <p className="text-muted-foreground">{t("pickup")}</p>
-                      <p className="font-medium">{pickupDate ? formatDate(pickupDate) : "N/A"}</p>
-                      <p className="text-xs text-muted-foreground">{locations.find((l) => l.id === pickupLocationId)?.name}</p>
+                      <p className="font-medium">
+                        {pickupDate ? formatDate(pickupDate) : "N/A"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        at {pickupTime}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {locations.find((l) => l.id === pickupLocationId)?.name}
+                      </p>
                     </div>
                     <div>
                       <p className="text-muted-foreground">{t("return")}</p>
-                      <p className="font-medium">{returnDate ? formatDate(returnDate) : "N/A"}</p>
-                      <p className="text-xs text-muted-foreground">{locations.find((l) => l.id === dropoffLocationId)?.name}</p>
+                      <p className="font-medium">
+                        {returnDate ? formatDate(returnDate) : "N/A"}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        at {pickupTime}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {
+                          locations.find((l) => l.id === dropoffLocationId)
+                            ?.name
+                        }
+                      </p>
                     </div>
                   </div>
 
                   {/* Extras */}
                   {selectedExtras.length > 0 && (
                     <div>
-                      <p className="text-sm font-medium mb-2">{t("selectedExtras")}</p>
+                      <p className="text-sm font-medium mb-2">
+                        {t("selectedExtras")}
+                      </p>
                       <div className="space-y-1">
                         {selectedExtras.map((id) => {
                           const extra = EXTRAS.find((e) => e.id === id);
                           if (!extra) return null;
                           return (
-                            <div key={id} className="flex justify-between text-sm">
+                            <div
+                              key={id}
+                              className="flex justify-between text-sm"
+                            >
                               <span>{extra.name}</span>
-                              <span>${extra.pricePerDay}/{t("day")}</span>
+                              <span>
+                                {formatCurrency(extra.pricePerDay)}/{t("day")}
+                              </span>
                             </div>
                           );
                         })}
@@ -464,26 +604,38 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
 
                   {/* Payment Method */}
                   <div>
-                    <p className="text-sm font-medium mb-1">{t("paymentMethod")}</p>
+                    <p className="text-sm font-medium mb-1">
+                      {t("paymentMethod")}
+                    </p>
                     <p className="text-sm text-muted-foreground">
-                      {selectedPaymentMethod === "BANK_TRANSFER" ? t("bankTransfer") : t("payAtPickup")}
+                      {selectedPaymentMethod === "BANK_TRANSFER"
+                        ? t("bankTransfer")
+                        : t("payAtPickup")}
                     </p>
                   </div>
 
-                  {/* Notes */}
-                  <div>
-                    <Label>{t("notesOptional")}</Label>
-                    <textarea
-                      value={notes}
-                      onChange={(e) => setNotes(e.target.value)}
-                      placeholder={t("notesPlaceholder")}
-                      className="w-full h-20 rounded-md border bg-background px-3 py-2 text-sm mt-1 resize-none"
+                  {/* Phone Number */}
+                  <div className="border-t pt-4">
+                    <Label htmlFor="phone" className="text-sm font-medium">
+                      Phone Number <span className="text-destructive">*</span>
+                    </Label>
+                    <p className="text-xs text-muted-foreground mb-2">
+                      Required for booking confirmation and contact at pickup
+                    </p>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+212 6XX XX XX XX"
+                      value={phone}
+                      onChange={(e) => setPhone(e.target.value)}
+                      required
                     />
                   </div>
                 </CardContent>
               </Card>
             )}
 
+            {/* Navigation Buttons */}
             <div className="flex justify-between mt-6">
               <Button
                 variant="outline"
@@ -495,13 +647,22 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
               {step < 3 ? (
                 <Button
                   onClick={() => setStep((s) => s + 1)}
-                  disabled={(step === 0 && !isDatesStepValid)}
+                  disabled={step === 0 && !isDatesStepValid}
                 >
                   {t("continue")} <ArrowRight className="h-4 w-4 ml-2" />
                 </Button>
               ) : (
-                <Button onClick={handleBook} disabled={submitting || !availability?.available}>
-                  {submitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : <CreditCard className="h-4 w-4 mr-2" />}
+                <Button
+                  onClick={handleBook}
+                  disabled={
+                    submitting || !availability?.available || !phone.trim()
+                  }
+                >
+                  {submitting ? (
+                    <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                  ) : (
+                    <CreditCard className="h-4 w-4 mr-2" />
+                  )}
                   {t("confirmBooking")} — {formatCurrency(getTotal())}
                 </Button>
               )}
@@ -518,40 +679,88 @@ export default function BookingFlowPage({ params }: { params: Promise<{ id: stri
                   <div className="flex gap-3">
                     <div className="h-16 w-20 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                       {car.images[0] ? (
-                        <img src={car.images[0].url} alt="" className="h-full w-full object-cover" />
+                        <img
+                          src={car.images[0].url}
+                          alt=""
+                          className="h-full w-full object-cover"
+                        />
                       ) : (
-                        <div className="h-full w-full flex items-center justify-center"><Car className="h-5 w-5 text-muted-foreground" /></div>
+                        <div className="h-full w-full flex items-center justify-center">
+                          <Car className="h-5 w-5 text-muted-foreground" />
+                        </div>
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-medium text-sm truncate">{car.brand.name} {car.name}</p>
-                      <p className="text-xs text-muted-foreground">{car.year}</p>
+                      <p className="font-medium text-sm truncate">
+                        {car.brand.name} {car.name}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {car.year}
+                      </p>
                     </div>
                   </div>
+
+                  {pickupDate && (
+                    <div className="space-y-1 text-xs text-muted-foreground border-t pt-3">
+                      <div className="flex items-center gap-1.5">
+                        <MapPin className="h-3 w-3" />
+                        <span>
+                          {locations.find((l) => l.id === pickupLocationId)
+                            ?.name || "—"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <MapPin className="h-3 w-3" />
+                        <span>
+                          {locations.find((l) => l.id === dropoffLocationId)
+                            ?.name || "—"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-3 w-3" />
+                        <span>
+                          {pickupDate
+                            ? `${formatDate(pickupDate)} at ${pickupTime}`
+                            : "—"}
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1.5">
+                        <Calendar className="h-3 w-3" />
+                        <span>
+                          {returnDate
+                            ? `${formatDate(returnDate)} at ${pickupTime}`
+                            : "—"}
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                   {availability && (
                     <div className="space-y-2 text-sm border-t pt-4">
                       <div className="flex justify-between">
-                        <span className="text-muted-foreground">{formatCurrency(availability.pricePerDay)} x {availability.totalDays}d</span>
+                        <span className="text-muted-foreground">
+                          {formatCurrency(availability.pricePerDay)} x{" "}
+                          {availability.totalDays}
+                          {t("day")}
+                        </span>
                         <span>{formatCurrency(availability.subtotal)}</span>
                       </div>
                       {getExtrasTotal() > 0 && (
                         <div className="flex justify-between">
-                          <span className="text-muted-foreground">{t("extras")} ({selectedExtras.length})</span>
+                          <span className="text-muted-foreground">
+                            {t("extras")} ({selectedExtras.length})
+                          </span>
                           <span>{formatCurrency(getExtrasTotal())}</span>
                         </div>
                       )}
-                      <div className="flex justify-between">
-                        <span className="text-muted-foreground">{t("tax")}</span>
-                        <span>{formatCurrency(availability.taxAmount)}</span>
-                      </div>
                       <div className="flex justify-between pt-2 border-t text-lg font-bold">
                         <span>{t("total")}</span>
                         <span>{formatCurrency(getTotal())}</span>
                       </div>
                       {availability.securityDeposit > 0 && (
                         <p className="text-xs text-muted-foreground">
-                          + {formatCurrency(availability.securityDeposit)} {t("refundableDeposit")}
+                          + {formatCurrency(availability.securityDeposit)}{" "}
+                          {t("refundableDeposit")}
                         </p>
                       )}
                     </div>

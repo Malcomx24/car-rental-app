@@ -7,7 +7,19 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { formatCurrency } from "@/lib/utils";
-import { Search, SlidersHorizontal, Star, Fuel, Users, Settings2, ChevronLeft, ChevronRight, Loader2, Heart, X } from "lucide-react";
+import {
+  Search,
+  SlidersHorizontal,
+  Star,
+  Fuel,
+  Users,
+  Settings2,
+  ChevronLeft,
+  ChevronRight,
+  Loader2,
+  Heart,
+  X,
+} from "lucide-react";
 import { useFavorites } from "@/hooks/use-favorites";
 import { useTranslations } from "next-intl";
 
@@ -36,7 +48,11 @@ interface Filters {
 }
 
 const FUEL_LABELS: Record<string, string> = {
-  GASOLINE: "Gasoline", DIESEL: "Diesel", ELECTRIC: "Electric", HYBRID: "Hybrid", PLUG_IN_HYBRID: "PHEV",
+  GASOLINE: "Gasoline",
+  DIESEL: "Diesel",
+  ELECTRIC: "Electric",
+  HYBRID: "Hybrid",
+  PLUG_IN_HYBRID: "PHEV",
 };
 
 export default function CarsPage() {
@@ -54,7 +70,10 @@ export default function CarsPage() {
   const [maxPrice, setMaxPrice] = useState("");
   const [sort, setSort] = useState("newest");
   const [showFilters, setShowFilters] = useState(false);
-  const [filters, setFilters] = useState<Filters>({ brands: [], categories: [] });
+  const [filters, setFilters] = useState<Filters>({
+    brands: [],
+    categories: [],
+  });
   const { favoriteIds, toggleFavorite } = useFavorites();
 
   const fetchCars = useCallback(async () => {
@@ -86,19 +105,29 @@ export default function CarsPage() {
   }, [search, brandId, categoryId, fuelType, minPrice, maxPrice, sort, page]);
 
   useEffect(() => {
-    fetch("/api/cars/filters").then((r) => r.json()).then((json) => {
-      if (json.success) setFilters(json.data);
-    });
+    fetch("/api/cars/filters")
+      .then((r) => r.json())
+      .then((json) => {
+        if (json.success) setFilters(json.data);
+      });
   }, []);
 
-  useEffect(() => { fetchCars(); }, [fetchCars]);
+  useEffect(() => {
+    fetchCars();
+  }, [fetchCars]);
 
   useEffect(() => {
     const timer = setTimeout(() => setPage(1), 300);
     return () => clearTimeout(timer);
   }, [search, brandId, categoryId, fuelType, minPrice, maxPrice, sort]);
 
-  const activeFilterCount = [brandId, categoryId, fuelType, minPrice, maxPrice].filter(Boolean).length;
+  const activeFilterCount = [
+    brandId,
+    categoryId,
+    fuelType,
+    minPrice,
+    maxPrice,
+  ].filter(Boolean).length;
 
   const clearFilters = () => {
     setBrandId("");
@@ -115,7 +144,8 @@ export default function CarsPage() {
       <section className="relative bg-gradient-to-br from-background via-background to-primary/5 border-b">
         <div className="container mx-auto px-4 py-16">
           <h1 className="text-4xl md:text-5xl font-bold">
-            {t("heroTitle")} <span className="text-primary">{t("heroTitleHighlight")}</span>
+            {t("heroTitle")}{" "}
+            <span className="text-primary">{t("heroTitleHighlight")}</span>
           </h1>
           <p className="text-muted-foreground mt-3 max-w-xl text-lg">
             {t("heroDescription")}
@@ -136,7 +166,10 @@ export default function CarsPage() {
             />
           </div>
           <div className="flex gap-2">
-            <Button variant="outline" onClick={() => setShowFilters(!showFilters)}>
+            <Button
+              variant="outline"
+              onClick={() => setShowFilters(!showFilters)}
+            >
               <SlidersHorizontal className="h-4 w-4 mr-2" />
               {t("filters")}
               {activeFilterCount > 0 && (
@@ -148,7 +181,7 @@ export default function CarsPage() {
             <select
               value={sort}
               onChange={(e) => setSort(e.target.value)}
-              className="h-10 rounded-md border bg-background px-3 text-sm"
+              className="h-10 rounded-md border border-input bg-transparent px-3 text-sm text-foreground focus:border-ring focus:ring-3 focus:ring-ring/50 outline-none dark:bg-input/30 dark:hover:bg-input/50"
             >
               <option value="newest">{t("sortNewest")}</option>
               <option value="price-asc">{t("sortPriceAsc")}</option>
@@ -162,31 +195,75 @@ export default function CarsPage() {
         {showFilters && (
           <div className="mb-6 p-4 rounded-xl border bg-card grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div>
-              <label className="text-xs font-medium mb-1 block">{t("brand")}</label>
-              <select value={brandId} onChange={(e) => setBrandId(e.target.value)} className="w-full h-9 rounded-md border bg-background px-3 text-sm">
+              <label className="text-xs font-medium mb-1 block">
+                {t("brand")}
+              </label>
+              <select
+                value={brandId}
+                onChange={(e) => setBrandId(e.target.value)}
+                className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm text-foreground focus:border-ring focus:ring-3 focus:ring-ring/50 outline-none dark:bg-input/30 dark:hover:bg-input/50"
+              >
                 <option value="">{t("allBrands")}</option>
-                {filters.brands.map((b) => <option key={b.id} value={b.id}>{b.name}</option>)}
+                {filters.brands.map((b) => (
+                  <option key={b.id} value={b.id}>
+                    {b.name}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium mb-1 block">{t("category")}</label>
-              <select value={categoryId} onChange={(e) => setCategoryId(e.target.value)} className="w-full h-9 rounded-md border bg-background px-3 text-sm">
+              <label className="text-xs font-medium mb-1 block">
+                {t("category")}
+              </label>
+              <select
+                value={categoryId}
+                onChange={(e) => setCategoryId(e.target.value)}
+                className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm text-foreground focus:border-ring focus:ring-3 focus:ring-ring/50 outline-none dark:bg-input/30 dark:hover:bg-input/50"
+              >
                 <option value="">{t("allCategories")}</option>
-                {filters.categories.map((c) => <option key={c.id} value={c.id}>{c.name}</option>)}
+                {filters.categories.map((c) => (
+                  <option key={c.id} value={c.id}>
+                    {c.name}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium mb-1 block">{t("fuelType")}</label>
-              <select value={fuelType} onChange={(e) => setFuelType(e.target.value)} className="w-full h-9 rounded-md border bg-background px-3 text-sm">
+              <label className="text-xs font-medium mb-1 block">
+                {t("fuelType")}
+              </label>
+              <select
+                value={fuelType}
+                onChange={(e) => setFuelType(e.target.value)}
+                className="w-full h-9 rounded-md border border-input bg-transparent px-3 text-sm text-foreground focus:border-ring focus:ring-3 focus:ring-ring/50 outline-none dark:bg-input/30 dark:hover:bg-input/50"
+              >
                 <option value="">{t("allFuelTypes")}</option>
-                {Object.entries(FUEL_LABELS).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
+                {Object.entries(FUEL_LABELS).map(([k, v]) => (
+                  <option key={k} value={k}>
+                    {v}
+                  </option>
+                ))}
               </select>
             </div>
             <div>
-              <label className="text-xs font-medium mb-1 block">{t("priceRange")}</label>
+              <label className="text-xs font-medium mb-1 block">
+                {t("priceRange")}
+              </label>
               <div className="flex gap-2">
-                <Input type="number" placeholder={t("min")} value={minPrice} onChange={(e) => setMinPrice(e.target.value)} className="h-9 text-sm" />
-                <Input type="number" placeholder={t("max")} value={maxPrice} onChange={(e) => setMaxPrice(e.target.value)} className="h-9 text-sm" />
+                <Input
+                  type="number"
+                  placeholder={t("min")}
+                  value={minPrice}
+                  onChange={(e) => setMinPrice(e.target.value)}
+                  className="h-9 text-sm"
+                />
+                <Input
+                  type="number"
+                  placeholder={t("max")}
+                  value={maxPrice}
+                  onChange={(e) => setMaxPrice(e.target.value)}
+                  className="h-9 text-sm"
+                />
               </div>
             </div>
             {activeFilterCount > 0 && (
@@ -222,7 +299,9 @@ export default function CarsPage() {
           <div className="text-center py-20">
             <p className="text-xl font-medium">{t("noCarsFound")}</p>
             <p className="text-muted-foreground mt-2">{t("noCarsFoundHint")}</p>
-            <Button variant="outline" className="mt-4" onClick={clearFilters}>{t("clearFilters")}</Button>
+            <Button variant="outline" className="mt-4" onClick={clearFilters}>
+              {t("clearFilters")}
+            </Button>
           </div>
         ) : (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -237,39 +316,70 @@ export default function CarsPage() {
                         className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
                     ) : (
-                      <div className="h-full w-full flex items-center justify-center text-muted-foreground">{t("noImage")}</div>
+                      <div className="h-full w-full flex items-center justify-center text-muted-foreground">
+                        {t("noImage")}
+                      </div>
                     )}
                     {car.isFeatured && (
-                      <Badge className="absolute top-3 left-3 bg-primary">{t("featured")}</Badge>
+                      <Badge className="absolute top-3 left-3 bg-primary">
+                        {t("featured")}
+                      </Badge>
                     )}
                     <button
                       className="absolute top-3 right-3 p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background transition-colors"
-                      onClick={(e) => { e.preventDefault(); toggleFavorite(car.id); }}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        toggleFavorite(car.id);
+                      }}
                     >
-                      <Heart className={`h-4 w-4 ${favoriteIds.has(car.id) ? "fill-red-500 text-red-500" : ""}`} />
+                      <Heart
+                        className={`h-4 w-4 ${favoriteIds.has(car.id) ? "fill-red-500 text-red-500" : ""}`}
+                      />
                     </button>
                   </div>
                   <CardContent className="p-5">
                     <div className="flex items-start justify-between mb-2">
                       <div>
-                        <p className="text-xs text-muted-foreground uppercase tracking-wide">{car.brand.name}</p>
-                        <h3 className="font-semibold text-lg leading-tight">{car.name}</h3>
+                        <p className="text-xs text-muted-foreground uppercase tracking-wide">
+                          {car.brand.name}
+                        </p>
+                        <h3 className="font-semibold text-lg leading-tight">
+                          {car.name}
+                        </h3>
                       </div>
                       <div className="flex items-center gap-1 shrink-0">
                         <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />
-                        <span className="text-sm font-medium">{Number(car.averageRating).toFixed(1)}</span>
-                        <span className="text-xs text-muted-foreground">({car.totalReviews})</span>
+                        <span className="text-sm font-medium">
+                          {Number(car.averageRating).toFixed(1)}
+                        </span>
+                        <span className="text-xs text-muted-foreground">
+                          ({car.totalReviews})
+                        </span>
                       </div>
                     </div>
                     <div className="flex items-center gap-3 text-sm text-muted-foreground mb-4">
-                      <span className="flex items-center gap-1"><Fuel className="h-3.5 w-3.5" />{FUEL_LABELS[car.fuelType] || car.fuelType}</span>
-                      <span className="flex items-center gap-1"><Settings2 className="h-3.5 w-3.5" />{car.transmission}</span>
-                      <span className="flex items-center gap-1"><Users className="h-3.5 w-3.5" />{car.seats}</span>
+                      <span className="flex items-center gap-1">
+                        <Fuel className="h-3.5 w-3.5" />
+                        {FUEL_LABELS[car.fuelType] || car.fuelType}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Settings2 className="h-3.5 w-3.5" />
+                        {car.transmission}
+                      </span>
+                      <span className="flex items-center gap-1">
+                        <Users className="h-3.5 w-3.5" />
+                        {car.seats}
+                      </span>
                     </div>
                     <div className="flex items-end justify-between pt-3 border-t">
                       <div>
-                        <span className="text-2xl font-bold">${Number(car.pricePerDay).toFixed(0)}</span>
-                        <span className="text-sm text-muted-foreground"> {t("perDay")}</span>
+                        <span className="text-2xl font-bold">
+                          ${Number(car.pricePerDay).toFixed(0)}
+                        </span>
+                        <span className="text-sm text-muted-foreground">
+                          {" "}
+                          {t("perDay")}
+                        </span>
                       </div>
                       <Button size="sm">{t("viewDetails")}</Button>
                     </div>
@@ -283,19 +393,34 @@ export default function CarsPage() {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-center gap-2 mt-10">
-            <Button variant="outline" size="sm" disabled={page <= 1} onClick={() => setPage(page - 1)}>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page <= 1}
+              onClick={() => setPage(page - 1)}
+            >
               <ChevronLeft className="h-4 w-4" />
             </Button>
             {Array.from({ length: Math.min(totalPages, 7) }, (_, i) => {
               const p = page <= 4 ? i + 1 : page + i - 3;
               if (p < 1 || p > totalPages) return null;
               return (
-                <Button key={p} variant={p === page ? "default" : "outline"} size="sm" onClick={() => setPage(p)}>
+                <Button
+                  key={p}
+                  variant={p === page ? "default" : "outline"}
+                  size="sm"
+                  onClick={() => setPage(p)}
+                >
                   {p}
                 </Button>
               );
             })}
-            <Button variant="outline" size="sm" disabled={page >= totalPages} onClick={() => setPage(page + 1)}>
+            <Button
+              variant="outline"
+              size="sm"
+              disabled={page >= totalPages}
+              onClick={() => setPage(page + 1)}
+            >
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>

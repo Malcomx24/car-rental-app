@@ -9,7 +9,13 @@ export async function GET(request: NextRequest) {
     const returnDate = searchParams.get("returnDate");
 
     if (!carId || !pickupDate || !returnDate) {
-      return NextResponse.json({ success: false, error: "carId, pickupDate, and returnDate are required" }, { status: 400 });
+      return NextResponse.json(
+        {
+          success: false,
+          error: "carId, pickupDate, and returnDate are required",
+        },
+        { status: 400 },
+      );
     }
 
     const pickup = new Date(pickupDate);
@@ -19,25 +25,30 @@ export async function GET(request: NextRequest) {
       where: {
         carId,
         status: { in: ["PENDING", "CONFIRMED", "ACTIVE"] },
-        AND: [
-          { pickupDate: { lt: returnD } },
-          { returnDate: { gt: pickup } },
-        ],
+        AND: [{ pickupDate: { lt: returnD } }, { returnDate: { gt: pickup } }],
       },
       select: { pickupDate: true, returnDate: true },
     });
 
     const available = conflictingBookings.length === 0;
 
-    const totalDays = Math.ceil((returnD.getTime() - pickup.getTime()) / (1000 * 60 * 60 * 24));
+    const totalDays = Math.ceil(
+      (returnD.getTime() - pickup.getTime()) / (1000 * 60 * 60 * 24),
+    );
 
     const car = await db.car.findUnique({
       where: { id: carId },
-      select: { pricePerDay: true, weekendPricePerDay: true, securityDeposit: true },
+      select: {
+        pricePerDay: true,
+        weekendPricePerDay: true,
+        securityDeposit: true,
+      },
     });
 
     let pricePerDay = car ? Number(car.pricePerDay) : 0;
-    const weekendRate = car?.weekendPricePerDay ? Number(car.weekendPricePerDay) : null;
+    const weekendRate = car?.weekendPricePerDay
+      ? Number(car.weekendPricePerDay)
+      : null;
     if (weekendRate) {
       let weekendDays = 0;
       const d = new Date(pickup);
@@ -49,9 +60,7 @@ export async function GET(request: NextRequest) {
     }
 
     const subtotal = pricePerDay * totalDays;
-    const taxRate = 0.08;
-    const taxAmount = subtotal * taxRate;
-    const total = subtotal + taxAmount;
+    const total = subtotal;
 
     return NextResponse.json({
       success: true,
@@ -61,13 +70,15 @@ export async function GET(request: NextRequest) {
         totalDays,
         pricePerDay,
         subtotal,
-        taxAmount,
         total,
         securityDeposit: car?.securityDeposit ? Number(car.securityDeposit) : 0,
       },
     });
   } catch (error) {
     console.error("GET /api/bookings/availability error:", error);
-    return NextResponse.json({ success: false, error: "Failed to check availability" }, { status: 500 });
+    return NextResponse.json(
+      { success: false, error: "Failed to check availability" },
+      { status: 500 },
+    );
   }
 }

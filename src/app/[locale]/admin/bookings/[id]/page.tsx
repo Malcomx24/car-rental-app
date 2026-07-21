@@ -1,11 +1,13 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter, useParams, useSearchParams } from "next/navigation";
+import { useRouter, useParams } from "next/navigation";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { BookingStatusBadge } from "@/components/shared/booking-status-badge";
 import { formatCurrency, formatDate, formatDateTime } from "@/lib/utils";
 import {
@@ -21,12 +23,11 @@ import {
   Info,
   Shield,
   User,
-  Building2,
-  Copy,
+  PlayCircle,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 
-interface BookingDetail {
+interface AdminBookingDetail {
   id: string;
   bookingNumber: string;
   pickupDate: string;
@@ -34,12 +35,15 @@ interface BookingDetail {
   totalDays: number;
   pricePerDay: number;
   subtotal: number;
-  taxes: number;
-  insurance: number;
+  taxAmount: number;
+  extrasAmount: number;
   totalAmount: number;
+  depositAmount: number;
   status: string;
   paymentStatus: string | null;
   paymentMethod: string | null;
+  paymentReference: string | null;
+  paymentNotes: string | null;
   notes: string | null;
   whatsapp: string | null;
   cin: string | null;
@@ -51,73 +55,72 @@ interface BookingDetail {
   car: {
     id: string;
     name: string;
+    year: number;
     brand: { name: string };
     category: { name: string };
     images: { url: string; isPrimary: boolean }[];
+    licensePlate: string;
   };
-  pickupLocation: { id: string; name: string; city: string };
-  dropoffLocation: { id: string; name: string; city: string };
-  extras: { id: string; name: string; pricePerDay: number; quantity: number }[];
+  pickupLocation: { id: string; name: string; city: string; address: string };
+  dropoffLocation: { id: string; name: string; city: string; address: string };
+  extras: {
+    id: string;
+    name: string;
+    pricePerDay: number;
+    quantity: number;
+    totalPrice: number;
+  }[];
   payments: {
     id: string;
     amount: number;
     currency: string;
     status: string;
     createdAt: string;
+    description: string | null;
   }[];
-  invoice: {
+  user: {
     id: string;
-    invoiceNumber: string;
-    totalAmount: number;
-    status: string;
-  } | null;
+    firstName: string;
+    lastName: string;
+    email: string;
+    phone: string | null;
+    avatar: string | null;
+  };
 }
 
-const PAYMENT_STATUS_COLORS: Record<string, string> = {
-  SUCCEEDED: "bg-emerald-500/10 text-emerald-600",
-  PENDING: "bg-amber-500/10 text-amber-600",
-  AWAITING_TRANSFER: "bg-blue-500/10 text-blue-600",
-  FAILED: "bg-red-500/10 text-red-600",
-  REFUNDED: "bg-gray-500/10 text-gray-600",
-};
+const PAYMENT_STATUS_OPTIONS = [
+  "PENDING",
+  "AWAITING_TRANSFER",
+  "SUCCEEDED",
+  "FAILED",
+  "REFUNDED",
+];
 
-export default function BookingDetailPage() {
-  const t = useTranslations("dashboard");
+export default function AdminBookingDetailPage() {
+  const t = useTranslations("admin");
   const tc = useTranslations("common");
   const router = useRouter();
   const params = useParams();
-  const searchParams = useSearchParams();
   const bookingId = params.id as string;
 
-  const [booking, setBooking] = useState<BookingDetail | null>(null);
+  const [booking, setBooking] = useState<AdminBookingDetail | null>(null);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [cancelling, setCancelling] = useState(false);
-  const [bankingDetails, setBankingDetails] = useState<{
-    bankName: string;
-    accountHolder: string;
-    iban: string;
-    swiftCode: string;
-    instructions: string;
-  } | null>(null);
-
-  const justBooked = searchParams.get("booked") === "true";
-  const justPaid = searchParams.get("paid") === "true";
+  const [updating, setUpdating] = useState(false);
+  const [paymentRef, setPaymentRef] = useState("");
+  const [paymentNotes, setPaymentNotes] = useState("");
+  const [cancellationReason, setCancellationReason] = useState("");
 
   const fetchBooking = useCallback(async () => {
     if (!bookingId) return;
     setLoading(true);
-    setError(null);
     try {
       const res = await fetch(`/api/bookings/${bookingId}`);
       const json = await res.json();
       if (json.success && json.data) {
         setBooking(json.data);
-      } else {
-        setError(json.error || "Booking not found");
       }
-    } catch {
-      setError("Failed to load booking");
+    } catch (err) {
+      console.error(err);
     } finally {
       setLoading(false);
     }
@@ -127,36 +130,45 @@ export default function BookingDetailPage() {
     fetchBooking();
   }, [fetchBooking]);
 
-  useEffect(() => {
-    if (booking?.paymentMethod === "BANK_TRANSFER") {
-      fetch("/api/banking-details")
-        .then((res) => res.json())
-        .then((json) => {
-          if (json.success && json.data) setBankingDetails(json.data);
-        })
-        .catch(() => {});
+  const updateStatus = async (status: string, reason?: string) => {
+    setUpdating(true);
+    try {
+      const body: Record<string, string> = { status };
+      if (reason) body.cancellationReason = reason;
+      const res = await fetch(`/api/bookings/${bookingId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (res.ok) fetchBooking();
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setUpdating(false);
     }
-  }, [booking?.paymentMethod]);
+  };
 
-  const handleCancel = async () => {
-    if (!confirm(t("cancelBookingConfirm"))) return;
-    setCancelling(true);
+  const updatePaymentStatus = async (paymentStatus: string) => {
+    setUpdating(true);
     try {
       const res = await fetch(`/api/bookings/${bookingId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          status: "CANCELLED",
-          cancellationReason: "Cancelled by customer",
+          paymentStatus,
+          paymentReference: paymentRef || undefined,
+          paymentNotes: paymentNotes || undefined,
         }),
       });
       if (res.ok) {
         fetchBooking();
+        setPaymentRef("");
+        setPaymentNotes("");
       }
     } catch (err) {
       console.error(err);
     } finally {
-      setCancelling(false);
+      setUpdating(false);
     }
   };
 
@@ -168,16 +180,16 @@ export default function BookingDetailPage() {
     );
   }
 
-  if (error || !booking) {
+  if (!booking) {
     return (
       <div className="text-center py-24">
-        <p className="text-xl font-medium">{error || tc("error")}</p>
+        <p className="text-xl font-medium">{t("bookingNotFound")}</p>
         <Button
           variant="outline"
           className="mt-4"
-          onClick={() => router.push("/dashboard/bookings")}
+          onClick={() => router.push("/admin/bookings")}
         >
-          <ArrowLeft className="h-4 w-4 mr-2" /> {t("myBookings")}
+          <ArrowLeft className="h-4 w-4 mr-2" /> {t("allBookings")}
         </Button>
       </div>
     );
@@ -185,34 +197,6 @@ export default function BookingDetailPage() {
 
   return (
     <div className="space-y-6">
-      {/* Success Banners */}
-      {justBooked && (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-500/10 border border-emerald-200">
-          <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0" />
-          <div>
-            <p className="font-medium text-emerald-700">
-              {t("bookingConfirmed")}
-            </p>
-            <p className="text-sm text-emerald-600">
-              {t("bookingConfirmedMessage")}
-            </p>
-          </div>
-        </div>
-      )}
-      {justPaid && (
-        <div className="flex items-center gap-3 p-4 rounded-xl bg-emerald-500/10 border border-emerald-200">
-          <CheckCircle className="h-5 w-5 text-emerald-600 flex-shrink-0" />
-          <div>
-            <p className="font-medium text-emerald-700">
-              {t("paymentReceived")}
-            </p>
-            <p className="text-sm text-emerald-600">
-              {t("paymentReceivedMessage")}
-            </p>
-          </div>
-        </div>
-      )}
-
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -220,41 +204,81 @@ export default function BookingDetailPage() {
             variant="ghost"
             size="sm"
             className="mb-2 -ml-2"
-            onClick={() => router.push("/dashboard/bookings")}
+            onClick={() => router.push("/admin/bookings")}
           >
-            <ArrowLeft className="h-4 w-4 mr-1" /> {t("myBookings")}
+            <ArrowLeft className="h-4 w-4 mr-1" /> {t("allBookings")}
           </Button>
           <div className="flex items-center gap-3">
-            <h1 className="text-3xl font-bold">{t("bookingDetails")}</h1>
+            <h1 className="text-3xl font-bold">
+              {t("booking")} #{booking.bookingNumber}
+            </h1>
             <BookingStatusBadge status={booking.status} />
           </div>
-          <p className="text-muted-foreground mt-1">#{booking.bookingNumber}</p>
+          <p className="text-muted-foreground mt-1">
+            {t("bookedOn")} {formatDateTime(booking.createdAt)}
+          </p>
         </div>
-        <div className="flex items-center gap-2">
-          <Link href={`/dashboard/bookings/${bookingId}/receipt`}>
-            <Button variant="outline" size="sm">
-              <FileText className="h-4 w-4 mr-1" /> View Receipt
+        <div className="flex items-center gap-2 flex-wrap">
+          {booking.status === "PENDING" && (
+            <Button
+              onClick={() => updateStatus("CONFIRMED")}
+              disabled={updating}
+            >
+              {updating ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <CheckCircle className="h-4 w-4 mr-2" />
+              )}
+              {t("confirm")}
             </Button>
-          </Link>
+          )}
+          {booking.status === "CONFIRMED" && (
+            <Button onClick={() => updateStatus("ACTIVE")} disabled={updating}>
+              {updating ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <PlayCircle className="h-4 w-4 mr-2" />
+              )}
+              {t("startRental")}
+            </Button>
+          )}
+          {booking.status === "ACTIVE" && (
+            <Button
+              onClick={() => updateStatus("COMPLETED")}
+              disabled={updating}
+            >
+              {updating ? (
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+              ) : (
+                <CheckCircle className="h-4 w-4 mr-2" />
+              )}
+              {t("markCompleted")}
+            </Button>
+          )}
           {["PENDING", "CONFIRMED"].includes(booking.status) && (
             <Button
               variant="destructive"
-              onClick={handleCancel}
-              disabled={cancelling}
+              onClick={() =>
+                updateStatus(
+                  "CANCELLED",
+                  cancellationReason || "Cancelled by admin",
+                )
+              }
+              disabled={updating}
             >
-              {cancelling ? (
+              {updating ? (
                 <Loader2 className="h-4 w-4 mr-2 animate-spin" />
               ) : (
                 <XCircle className="h-4 w-4 mr-2" />
               )}
-              {t("cancel")}
+              {t("cancelBooking")}
             </Button>
           )}
         </div>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Car Info */}
+        {/* Vehicle Info */}
         <Card className="lg:col-span-2">
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
@@ -281,11 +305,14 @@ export default function BookingDetailPage() {
                   {booking.car.brand.name} {booking.car.name}
                 </h3>
                 <p className="text-sm text-muted-foreground">
-                  {booking.car.category.name}
+                  {booking.car.year} &middot; {booking.car.category.name}
+                </p>
+                <p className="text-sm text-muted-foreground">
+                  {t("licensePlate")}: {booking.car.licensePlate}
                 </p>
                 <Link href={`/cars/${booking.car.id}`}>
                   <Button variant="outline" size="sm" className="mt-2">
-                    <Info className="h-4 w-4 mr-1" /> {t("viewCar")}
+                    <Info className="h-4 w-4 mr-1" /> {t("viewVehicle")}
                   </Button>
                 </Link>
               </div>
@@ -304,22 +331,29 @@ export default function BookingDetailPage() {
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">{t("pricePerDay")}</span>
               <span>
-                {formatCurrency(booking.pricePerDay)} x {booking.totalDays}{" "}
-                {booking.totalDays !== 1 ? tc("days") : tc("day")}
+                {formatCurrency(booking.pricePerDay)} x {booking.totalDays}d
               </span>
             </div>
             <div className="flex justify-between text-sm">
               <span className="text-muted-foreground">{t("subtotal")}</span>
               <span>{formatCurrency(booking.subtotal)}</span>
             </div>
-            <div className="flex justify-between text-sm">
-              <span className="text-muted-foreground">{t("insurance")}</span>
-              <span>{formatCurrency(booking.insurance)}</span>
-            </div>
+            {booking.extrasAmount > 0 && (
+              <div className="flex justify-between text-sm">
+                <span className="text-muted-foreground">{t("extras")}</span>
+                <span>{formatCurrency(booking.extrasAmount)}</span>
+              </div>
+            )}
             <div className="border-t pt-3 flex justify-between font-bold text-lg">
               <span>{tc("total")}</span>
               <span>{formatCurrency(booking.totalAmount)}</span>
             </div>
+            {booking.depositAmount > 0 && (
+              <p className="text-xs text-muted-foreground">
+                + {formatCurrency(booking.depositAmount)}{" "}
+                {t("refundableDeposit")}
+              </p>
+            )}
           </CardContent>
         </Card>
       </div>
@@ -368,7 +402,7 @@ export default function BookingDetailPage() {
               </p>
               <p className="font-medium">{booking.pickupLocation.name}</p>
               <p className="text-sm text-muted-foreground">
-                {booking.pickupLocation.city}
+                {booking.pickupLocation.address}, {booking.pickupLocation.city}
               </p>
             </div>
             <div>
@@ -377,78 +411,10 @@ export default function BookingDetailPage() {
               </p>
               <p className="font-medium">{booking.dropoffLocation.name}</p>
               <p className="text-sm text-muted-foreground">
+                {booking.dropoffLocation.address},{" "}
                 {booking.dropoffLocation.city}
               </p>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Payment Status */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2 text-lg">
-              <Shield className="h-5 w-5" /> {t("payment")}
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-4">
-            <div>
-              <p className="text-sm text-muted-foreground">
-                {t("paymentStatus")}
-              </p>
-              <Badge
-                variant="secondary"
-                className={
-                  PAYMENT_STATUS_COLORS[booking.paymentStatus || "PENDING"] ||
-                  ""
-                }
-              >
-                {booking.paymentStatus || "PENDING"}
-              </Badge>
-            </div>
-            {booking.paymentMethod && (
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  {t("paymentMethod")}
-                </p>
-                <p className="font-medium">
-                  {booking.paymentMethod === "BANK_TRANSFER"
-                    ? t("bankTransfer")
-                    : t("payAtPickup")}
-                </p>
-              </div>
-            )}
-            {booking.invoice && (
-              <div>
-                <p className="text-sm text-muted-foreground">{t("invoice")}</p>
-                <Link
-                  href="/dashboard/invoices"
-                  className="font-medium text-primary hover:underline"
-                >
-                  {booking.invoice.invoiceNumber} -{" "}
-                  {formatCurrency(booking.invoice.totalAmount)}
-                </Link>
-              </div>
-            )}
-            {booking.payments.length > 0 && (
-              <div>
-                <p className="text-sm text-muted-foreground mb-2">
-                  {t("paymentHistory")}
-                </p>
-                {booking.payments.map((payment) => (
-                  <div
-                    key={payment.id}
-                    className="flex items-center justify-between text-sm py-1"
-                  >
-                    <span className="text-muted-foreground">
-                      {formatDateTime(payment.createdAt)}
-                    </span>
-                    <span className="font-medium">
-                      {formatCurrency(payment.amount)}
-                    </span>
-                  </div>
-                ))}
-              </div>
-            )}
           </CardContent>
         </Card>
 
@@ -456,7 +422,40 @@ export default function BookingDetailPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <User className="h-5 w-5" /> {t("customerInformation")}
+              <User className="h-5 w-5" /> {t("customerDetails")}
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            <div>
+              <p className="text-sm text-muted-foreground">{t("name")}</p>
+              <p className="font-medium">
+                {booking.user.firstName} {booking.user.lastName}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-muted-foreground">{t("email")}</p>
+              <p className="font-medium">{booking.user.email}</p>
+            </div>
+            {booking.user.phone && (
+              <div>
+                <p className="text-sm text-muted-foreground">{t("phone")}</p>
+                <p className="font-medium">{booking.user.phone}</p>
+              </div>
+            )}
+            {booking.whatsapp && (
+              <div>
+                <p className="text-sm text-muted-foreground">{t("whatsapp")}</p>
+                <p className="font-medium">{booking.whatsapp}</p>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Identity Information */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2 text-lg">
+              <FileText className="h-5 w-5" /> {t("identityInformation")}
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
@@ -465,7 +464,7 @@ export default function BookingDetailPage() {
                 <p className="text-sm text-muted-foreground">
                   {t("cinPassport")}
                 </p>
-                <p className="font-medium">{booking.cin}</p>
+                <p className="font-medium font-mono">{booking.cin}</p>
               </div>
             )}
             {booking.nationality && (
@@ -484,82 +483,126 @@ export default function BookingDetailPage() {
                 <p className="font-medium">{formatDate(booking.dateOfBirth)}</p>
               </div>
             )}
-            {booking.whatsapp && (
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  {t("whatsappNumber")}
-                </p>
-                <p className="font-medium">{booking.whatsapp}</p>
-              </div>
+            {!booking.cin && !booking.nationality && !booking.dateOfBirth && (
+              <p className="text-sm text-muted-foreground">
+                {t("noIdentityProvided")}
+              </p>
             )}
           </CardContent>
         </Card>
-      </div>
 
-      {/* Banking Details — only for Bank Transfer */}
-      {booking.paymentMethod === "BANK_TRANSFER" && bankingDetails && (
-        <Card className="border-amber-200 bg-amber-500/5">
+        {/* Payment Management */}
+        <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2 text-lg">
-              <Building2 className="h-5 w-5 text-amber-600" />{" "}
-              {t("bankTransferDetails")}
+              <Shield className="h-5 w-5" /> {t("payment")}
             </CardTitle>
           </CardHeader>
-          <CardContent className="space-y-3">
-            <p className="text-sm text-muted-foreground">
-              {t("bankTransferInstructions")}
-            </p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-              <div>
-                <p className="text-sm text-muted-foreground">{t("bankName")}</p>
-                <p className="font-semibold">{bankingDetails.bankName}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">
-                  {t("accountHolder")}
-                </p>
-                <p className="font-semibold">{bankingDetails.accountHolder}</p>
-              </div>
-              <div>
-                <p className="text-sm text-muted-foreground">{t("iban")}</p>
-                <div className="flex items-center gap-2">
-                  <p className="font-semibold font-mono">
-                    {bankingDetails.iban}
-                  </p>
-                  <button
-                    type="button"
-                    onClick={() =>
-                      navigator.clipboard.writeText(bankingDetails.iban)
-                    }
-                    className="text-muted-foreground hover:text-foreground transition-colors"
-                    title={tc("copy")}
-                  >
-                    <Copy className="h-4 w-4" />
-                  </button>
-                </div>
-              </div>
-              {bankingDetails.swiftCode && (
-                <div>
-                  <p className="text-sm text-muted-foreground">
-                    {t("swiftCode")}
-                  </p>
-                  <p className="font-semibold font-mono">
-                    {bankingDetails.swiftCode}
-                  </p>
-                </div>
-              )}
+          <CardContent className="space-y-4">
+            <div>
+              <p className="text-sm text-muted-foreground">
+                {t("paymentMethod")}
+              </p>
+              <p className="font-medium">
+                {booking.paymentMethod === "BANK_TRANSFER"
+                  ? t("bankTransfer")
+                  : t("payAtPickup")}
+              </p>
             </div>
-            {bankingDetails.instructions && (
-              <div className="pt-2 border-t">
+            <div>
+              <p className="text-sm text-muted-foreground">
+                {t("paymentStatus")}
+              </p>
+              <Badge variant="secondary">
+                {booking.paymentStatus || "PENDING"}
+              </Badge>
+            </div>
+            {booking.paymentReference && (
+              <div>
                 <p className="text-sm text-muted-foreground">
-                  {t("transferNotes")}
+                  {t("paymentReference")}
                 </p>
-                <p className="text-sm mt-1">{bankingDetails.instructions}</p>
+                <p className="font-medium font-mono text-sm">
+                  {booking.paymentReference}
+                </p>
               </div>
             )}
+
+            {/* Quick Payment Status Update */}
+            <div className="space-y-3 pt-2 border-t">
+              <p className="text-sm font-medium">{t("updatePaymentStatus")}</p>
+              <div>
+                <Label className="text-xs">{t("paymentReference")}</Label>
+                <Input
+                  size={1}
+                  placeholder={t("referencePlaceholder")}
+                  value={paymentRef}
+                  onChange={(e) => setPaymentRef(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div>
+                <Label className="text-xs">{t("paymentNotes")}</Label>
+                <Input
+                  placeholder={t("notesPlaceholder")}
+                  value={paymentNotes}
+                  onChange={(e) => setPaymentNotes(e.target.value)}
+                  className="mt-1"
+                />
+              </div>
+              <div className="flex flex-wrap gap-2">
+                {PAYMENT_STATUS_OPTIONS.map((status) => (
+                  <Button
+                    key={status}
+                    size="sm"
+                    variant={
+                      booking.paymentStatus === status ? "default" : "outline"
+                    }
+                    onClick={() => updatePaymentStatus(status)}
+                    disabled={updating}
+                  >
+                    {status}
+                  </Button>
+                ))}
+              </div>
+            </div>
           </CardContent>
         </Card>
-      )}
+
+        {/* Payment History */}
+        {booking.payments.length > 0 && (
+          <Card>
+            <CardHeader>
+              <CardTitle className="text-lg">{t("paymentHistory")}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-3">
+                {booking.payments.map((payment) => (
+                  <div
+                    key={payment.id}
+                    className="flex items-center justify-between text-sm p-3 rounded-lg bg-muted/50"
+                  >
+                    <div>
+                      <p className="font-medium">
+                        {formatCurrency(payment.amount)}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {formatDateTime(payment.createdAt)}
+                      </p>
+                      {payment.description && (
+                        <p className="text-xs text-muted-foreground">
+                          {payment.description}
+                        </p>
+                      )}
+                    </div>
+                    <Badge variant="secondary">{payment.status}</Badge>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </div>
 
       {/* Extras */}
       {booking.extras.length > 0 && (
@@ -582,9 +625,7 @@ export default function BookingDetailPage() {
                     </p>
                   </div>
                   <span className="font-medium">
-                    {formatCurrency(
-                      extra.pricePerDay * extra.quantity * booking.totalDays,
-                    )}
+                    {formatCurrency(extra.totalPrice)}
                   </span>
                 </div>
               ))}
@@ -626,11 +667,6 @@ export default function BookingDetailPage() {
           </CardContent>
         </Card>
       )}
-
-      {/* Footer timestamp */}
-      <p className="text-sm text-muted-foreground text-center">
-        {t("bookedOn")} {formatDateTime(booking.createdAt)}
-      </p>
     </div>
   );
 }

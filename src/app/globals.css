@@ -140,10 +140,170 @@
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
+
+  select,
+  select option {
+    color: var(--foreground);
+  }
+
+  select {
+    background-color: var(--background);
+  }
+
+  select:focus {
+    border-color: var(--ring);
+    outline: none;
+    box-shadow: 0 0 0 3px color-mix(in oklch, var(--ring) 20%, transparent);
+  }
+
+  select option {
+    background-color: var(--background);
+    color: var(--foreground);
+    padding: 8px 12px;
+  }
+
+  select option:disabled {
+    opacity: 0.5;
+  }
+
+  input,
+  textarea {
+    color: var(--foreground);
+  }
+
+  input::placeholder,
+  textarea::placeholder {
+    color: var(--muted-foreground);
+  }
 }
 
 @layer utilities {
   .text-balance {
     text-wrap: balance;
+  }
+}
+
+/* ============================================
+   Booking Receipt Styles
+   ============================================ */
+
+.receipt-container {
+  max-width: 794px;
+  padding: 40px;
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 12px;
+  box-shadow:
+    0 1px 3px rgba(0, 0, 0, 0.04),
+    0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+.receipt-section {
+  break-inside: avoid;
+}
+
+/* ============================================
+   Print Styles - A4 Optimized
+   ============================================ */
+
+@media print {
+  /* Reset everything for clean print */
+  *,
+  *::before,
+  *::after {
+    box-shadow: none !important;
+    text-shadow: none !important;
+  }
+
+  /* Hide non-print elements */
+  .no-print,
+  .receipt-actions {
+    display: none !important;
+  }
+
+  /* Hide app chrome */
+  nav,
+  header:not(.receipt-header),
+  aside,
+  footer:not(.receipt-footer),
+  [data-slot="sidebar"],
+  [role="navigation"],
+  [role="banner"] {
+    display: none !important;
+  }
+
+  /* Hide sidebar and dashboard shell */
+  .flex.min-h-screen > div:first-child {
+    display: none !important;
+  }
+
+  /* Reset body */
+  body {
+    background: white !important;
+    margin: 0;
+    padding: 0;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Reset page */
+  html {
+    margin: 0;
+    padding: 0;
+  }
+
+  /* A4 Page setup */
+  @page {
+    size: A4 portrait;
+    margin: 15mm;
+  }
+
+  /* Receipt Container - Full page */
+  .receipt-container {
+    max-width: none;
+    width: 100%;
+    border: none;
+    border-radius: 0;
+    box-shadow: none;
+    padding: 0;
+    margin: 0;
+    background: white;
+  }
+
+  /* Prevent section breaks */
+  .receipt-section {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .receipt-header {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  .receipt-footer {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+
+  /* Ensure backgrounds print */
+  .bg-black,
+  .bg-gray-800,
+  .bg-gray-900 {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+    color-adjust: exact !important;
+  }
+
+  /* Force white background */
+  .receipt-container {
+    background: white !important;
+  }
+
+  /* Links - no underline in print */
+  a {
+    text-decoration: none !important;
+    color: inherit !important;
   }
 }

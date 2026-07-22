@@ -37,6 +37,8 @@ export default function AdminCarsPage() {
   const [statusFilter, setStatusFilter] = useState("");
   const [brandFilter, setBrandFilter] = useState("");
   const [formOpen, setFormOpen] = useState(false);
+  const [editCarId, setEditCarId] = useState<string | null>(null);
+  const [editCarData, setEditCarData] = useState<(Partial<CarFormData> & { id?: string; images?: { id?: string; url: string; alt?: string }[] }) | undefined>(undefined);
   const [categories, setCategories] = useState<Category[]>([]);
 
   const fetchCars = useCallback(async () => {
@@ -101,6 +103,62 @@ export default function AdminCarsPage() {
     await fetchCars();
   };
 
+  const handleAdd = () => {
+    setEditCarId(null);
+    setEditCarData(undefined);
+    setFormOpen(true);
+  };
+
+  const handleEdit = async (id: string) => {
+    try {
+      const res = await fetch(`/api/cars/${id}`);
+      const json = await res.json();
+      if (json.success) {
+        const car = json.data;
+        setEditCarId(id);
+        setEditCarData({
+          id: car.id,
+          name: car.name,
+          slug: car.slug,
+          description: car.description,
+          pricePerDay: car.pricePerDay,
+          year: car.year,
+          mileage: car.mileage,
+          fuelType: car.fuelType,
+          transmission: car.transmission,
+          seats: car.seats,
+          doors: car.doors,
+          licensePlate: car.licensePlate,
+          isFeatured: car.isFeatured,
+          isPublished: car.isPublished,
+          status: car.status,
+          brandId: car.brandId,
+          categoryId: car.categoryId,
+          images: car.images,
+        });
+        setFormOpen(true);
+      }
+    } catch (err) {
+      console.error("Failed to load car for editing:", err);
+    }
+  };
+
+  const handleUpdate = async (data: CarFormData, images: { url: string; alt?: string }[]) => {
+    if (!editCarId) return;
+    const res = await fetch(`/api/cars/${editCarId}`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ...data, images }),
+    });
+    if (!res.ok) {
+      const err = await res.json();
+      throw new Error(err.error || t("failedToCreateCar"));
+    }
+    setEditCarId(null);
+    setEditCarData(undefined);
+    await fetchCars();
+  };
+
   const handleDelete = async (id: string) => {
     if (!confirm(t("confirmDeleteCar"))) return;
     try {
@@ -134,12 +192,15 @@ export default function AdminCarsPage() {
         onBrandFilter={setBrandFilter}
         onPageChange={setPage}
         onDelete={handleDelete}
+        onAdd={handleAdd}
+        onEdit={handleEdit}
       />
 
       <CarFormDialog
         open={formOpen}
-        onClose={() => setFormOpen(false)}
-        onSave={handleCreate}
+        onClose={() => { setFormOpen(false); setEditCarId(null); setEditCarData(undefined); }}
+        onSave={editCarId ? handleUpdate : handleCreate}
+        initialData={editCarData}
         categories={categories}
       />
     </div>

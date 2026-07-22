@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useSignIn } from "@clerk/nextjs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,7 +41,7 @@ export default function SignInPage() {
         </div>
         <p className="text-center text-sm text-muted-foreground">
           {t("noAccount")}{" "}
-          <Link href={`/${locale}/sign-up`} className="text-primary hover:underline font-medium">
+          <Link href="/sign-up" className="text-primary hover:underline font-medium">
             {t("signUp")}
           </Link>
         </p>
@@ -105,7 +105,7 @@ export default function SignInPage() {
           console.log("[SignIn] Verification complete! Activating session:", result.createdSessionId);
           await setActive({ session: result.createdSessionId });
           console.log("[SignIn] Session activated. Redirecting to /dashboard");
-          router.replace(`/${locale}/dashboard`);
+          router.replace("/dashboard");
         } else {
           console.error("[SignIn] Status is complete but createdSessionId is missing");
           setError(t("sessionError"));
@@ -214,7 +214,7 @@ export default function SignInPage() {
 
       <p className="text-center text-sm text-muted-foreground">
         {t("noAccount")}{" "}
-        <Link href={`/${locale}/sign-up`} className="text-primary hover:underline font-medium">
+        <Link href="/sign-up" className="text-primary hover:underline font-medium">
           {t("signUp")}
         </Link>
       </p>

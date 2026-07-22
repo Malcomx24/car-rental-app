@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Car } from "lucide-react";
 import { getTranslations } from "next-intl/server";
 
@@ -7,9 +7,9 @@ export async function Footer() {
 
   const companyLinks = [
     { label: t("aboutUs"), href: "/about" },
-    { label: t("careers"), href: "/careers" },
+    { label: t("fleet"), href: "/cars" },
     { label: t("blog"), href: "/blog" },
-    { label: t("press"), href: "/press" },
+    { label: t("careers"), href: "/careers" },
   ];
 
   const supportLinks = [
@@ -26,28 +26,43 @@ export async function Footer() {
     { label: t("licenseAgreement"), href: "/license" },
   ];
 
+  const locationLinks = [
+    { label: "Agadir", href: "/locations" },
+    { label: "Marrakech", href: "/locations" },
+    { label: "Casablanca", href: "/locations" },
+    { label: t("locationsTitle"), href: "/locations" },
+  ];
+
   return (
-    <footer className="border-t bg-muted/50">
+    <footer className="border-t bg-gray-950 text-gray-300">
+      {/* Main footer */}
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 gap-8 md:grid-cols-4">
-          <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2 font-bold text-xl">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
+          {/* Brand */}
+          <div className="lg:col-span-2 space-y-4">
+            <Link href="/" className="flex items-center gap-2 font-bold text-xl text-white">
               <Car className="h-6 w-6" />
               <span>DriveRent</span>
             </Link>
-            <p className="text-sm text-muted-foreground max-w-xs">
+            <p className="text-sm text-gray-400 max-w-xs leading-relaxed">
               {t("description")}
             </p>
+            <div className="flex items-center gap-1 text-sm text-gray-500">
+              <span>Made with</span>
+              <span className="text-red-400">&#9829;</span>
+              <span>in Morocco</span>
+            </div>
           </div>
 
+          {/* Company */}
           <div>
-            <h3 className="font-semibold mb-4">{t("company")}</h3>
-            <ul className="space-y-2">
+            <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wider">{t("company")}</h4>
+            <ul className="space-y-2.5">
               {companyLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-sm text-gray-400 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -56,14 +71,15 @@ export async function Footer() {
             </ul>
           </div>
 
+          {/* Support */}
           <div>
-            <h3 className="font-semibold mb-4">{t("support")}</h3>
-            <ul className="space-y-2">
+            <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wider">{t("support")}</h4>
+            <ul className="space-y-2.5">
               {supportLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-sm text-gray-400 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -72,14 +88,15 @@ export async function Footer() {
             </ul>
           </div>
 
+          {/* Locations */}
           <div>
-            <h3 className="font-semibold mb-4">{t("legal")}</h3>
-            <ul className="space-y-2">
-              {legalLinks.map((link) => (
-                <li key={link.href}>
+            <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wider">{t("locationsTitle")}</h4>
+            <ul className="space-y-2.5">
+              {locationLinks.map((link, i) => (
+                <li key={i}>
                   <Link
                     href={link.href}
-                    className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                    className="text-sm text-gray-400 hover:text-white transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -89,8 +106,22 @@ export async function Footer() {
           </div>
         </div>
 
-        <div className="mt-8 border-t pt-8 text-center text-sm text-muted-foreground">
-          &copy; {new Date().getFullYear()} DriveRent. {t("copyright")}
+        {/* Bottom bar */}
+        <div className="mt-10 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm text-gray-500">
+            &copy; {new Date().getFullYear()} DriveRent. {t("copyright")}
+          </p>
+          <div className="flex items-center gap-6">
+            {legalLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </div>
     </footer>

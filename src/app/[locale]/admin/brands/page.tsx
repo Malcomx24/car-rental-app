@@ -181,8 +181,8 @@ export default function AdminBrandsPage() {
         <div
           className={`fixed top-4 right-4 z-50 px-4 py-3 rounded-lg shadow-lg text-sm font-medium transition-all ${
             toast.type === "success"
-              ? "bg-emerald-600 text-white"
-              : "bg-red-600 text-white"
+              ? "bg-green-500/15 text-green-700 dark:text-green-400"
+              : "bg-red-500/15 text-red-700 dark:text-red-400"
           }`}
         >
           {toast.message}

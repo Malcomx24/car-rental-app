@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import {
   Plus,
   CalendarDays,
@@ -15,7 +15,7 @@ import { formatCurrency } from "@/lib/utils";
 const quickActions = [
   {
     labelKey: "addCar" as const,
-    href: "/admin/cars/new",
+    href: "/admin/cars",
     icon: Plus,
     color: "text-emerald-500",
     bg: "bg-emerald-500/10 hover:bg-emerald-500/20",

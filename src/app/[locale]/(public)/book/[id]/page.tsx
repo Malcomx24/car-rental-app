@@ -1,8 +1,8 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
+import { useRouter } from "@/i18n/navigation";
+import { Link } from "@/i18n/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -347,13 +347,13 @@ export default function BookingFlowPage({
                     </div>
                   )}
                   {availability && !availability.available && (
-                    <div className="flex items-center gap-2 text-sm text-red-600 bg-red-500/5 p-3 rounded-lg">
+                    <div className="flex items-center gap-2 text-sm text-destructive bg-destructive/5 p-3 rounded-lg">
                       <Info className="h-4 w-4" />
                       {t("notAvailable")}
                     </div>
                   )}
                   {availability && availability.available && (
-                    <div className="flex items-center gap-2 text-sm text-emerald-600 bg-emerald-500/5 p-3 rounded-lg">
+                    <div className="flex items-center gap-2 text-sm text-green-600 dark:text-green-400 bg-green-500/5 p-3 rounded-lg">
                       <CheckCircle className="h-4 w-4" />
                       {t("availableForDays", { count: availability.totalDays })}
                     </div>
@@ -420,14 +420,14 @@ export default function BookingFlowPage({
             {step === 2 && (
               <div className="space-y-4">
                 <h3 className="font-semibold text-lg">{t("paymentMethod")}</h3>
-                <p className="text-sm text-gray-500">{t("choosePayment")}</p>
+                <p className="text-sm text-muted-foreground">{t("choosePayment")}</p>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4">
                   <button
                     type="button"
                     onClick={() => setSelectedPaymentMethod("PAY_AT_PICKUP")}
                     className={`relative p-6 rounded-xl border-2 text-left transition-all hover:shadow-md ${
                       selectedPaymentMethod === "PAY_AT_PICKUP"
-                        ? "border-blue-600 bg-blue-50 ring-1 ring-blue-600"
+                        ? "border-primary bg-primary/10 ring-1 ring-primary"
                         : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
@@ -435,19 +435,19 @@ export default function BookingFlowPage({
                       <div
                         className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
                           selectedPaymentMethod === "PAY_AT_PICKUP"
-                            ? "border-blue-600"
+                            ? "border-primary"
                             : "border-gray-300"
                         }`}
                       >
                         {selectedPaymentMethod === "PAY_AT_PICKUP" && (
-                          <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-primary" />
                         )}
                       </div>
                       <div>
                         <div className="font-semibold text-sm">
                           {t("payAtPickup")}
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           {t("payAtPickupDesc")}
                         </p>
                       </div>
@@ -459,7 +459,7 @@ export default function BookingFlowPage({
                     onClick={() => setSelectedPaymentMethod("BANK_TRANSFER")}
                     className={`relative p-6 rounded-xl border-2 text-left transition-all hover:shadow-md ${
                       selectedPaymentMethod === "BANK_TRANSFER"
-                        ? "border-blue-600 bg-blue-50 ring-1 ring-blue-600"
+                        ? "border-primary bg-primary/10 ring-1 ring-primary"
                         : "border-gray-200 hover:border-gray-300"
                     }`}
                   >
@@ -467,19 +467,19 @@ export default function BookingFlowPage({
                       <div
                         className={`w-5 h-5 rounded-full border-2 flex items-center justify-center flex-shrink-0 mt-0.5 ${
                           selectedPaymentMethod === "BANK_TRANSFER"
-                            ? "border-blue-600"
+                            ? "border-primary"
                             : "border-gray-300"
                         }`}
                       >
                         {selectedPaymentMethod === "BANK_TRANSFER" && (
-                          <div className="w-2.5 h-2.5 rounded-full bg-blue-600" />
+                          <div className="w-2.5 h-2.5 rounded-full bg-primary" />
                         )}
                       </div>
                       <div>
                         <div className="font-semibold text-sm">
                           {t("bankTransfer")}
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-muted-foreground mt-1">
                           {t("bankTransferDesc")}
                         </p>
                       </div>

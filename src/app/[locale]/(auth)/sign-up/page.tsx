@@ -1,8 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import Link from "next/link";
-import { useRouter } from "next/navigation";
+import { Link } from "@/i18n/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { useSignUp } from "@clerk/nextjs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -44,7 +44,7 @@ export default function SignUpPage() {
         </div>
         <p className="text-center text-sm text-muted-foreground">
           {t("alreadyHaveAccount")}{" "}
-          <Link href={`/${locale}/sign-in`} className="text-primary hover:underline font-medium">
+          <Link href="/sign-in" className="text-primary hover:underline font-medium">
             {t("signIn")}
           </Link>
         </p>
@@ -80,7 +80,7 @@ export default function SignUpPage() {
       if (createResult.status === "complete") {
         console.log("[SignUp] Sign-up already complete. Session:", createResult.createdSessionId);
         await setActive({ session: createResult.createdSessionId });
-        router.replace(`/${locale}/dashboard`);
+        router.replace("/dashboard");
         return;
       }
 
@@ -123,7 +123,7 @@ export default function SignUpPage() {
           console.log("[SignUp] Verification complete! Activating session:", result.createdSessionId);
           await setActive({ session: result.createdSessionId });
           console.log("[SignUp] Session activated. Redirecting to /dashboard");
-          router.replace(`/${locale}/dashboard`);
+          router.replace("/dashboard");
         } else {
           console.error("[SignUp] Status is complete but createdSessionId is missing");
           setError(t("accountCreatedSessionError"));

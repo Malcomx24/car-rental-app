@@ -1,6 +1,6 @@
 "use client";
 
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 import { Button } from "@/components/ui/button";
 import { Car, Home, ArrowLeft, Search } from "lucide-react";
 import { useTranslations } from "next-intl";

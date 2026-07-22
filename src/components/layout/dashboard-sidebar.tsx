@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import { Car, LogOut, Menu, X } from "lucide-react";
@@ -9,10 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { useState } from "react";
 
+function stripLocale(path: string): string {
+  return path.replace(/^\/(en|fr|ar)(\/|$)/, "/") || "/";
+}
+
 export function DashboardSidebar() {
   const t = useTranslations("dashboard");
   const tc = useTranslations("common");
-  const pathname = usePathname();
+  const pathname = stripLocale(usePathname());
   const [open, setOpen] = useState(false);
 
   const navLinks = [

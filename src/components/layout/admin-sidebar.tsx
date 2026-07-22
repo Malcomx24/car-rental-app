@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
 import { cn } from "@/lib/utils";
 import {
@@ -16,7 +15,6 @@ import {
   Settings,
   Wrench,
   Bell,
-  FileText,
   Star,
   Tag,
   FolderOpen,
@@ -25,10 +23,14 @@ import {
 import { Button } from "@/components/ui/button";
 import { useState } from "react";
 
+function stripLocale(path: string): string {
+  return path.replace(/^\/(en|fr|ar)(\/|$)/, "/") || "/";
+}
+
 export function AdminSidebar() {
   const t = useTranslations("admin");
   const tc = useTranslations("common");
-  const pathname = usePathname();
+  const pathname = stripLocale(usePathname());
   const [collapsed, setCollapsed] = useState(false);
 
   const navItems = [
@@ -44,7 +46,6 @@ export function AdminSidebar() {
     { label: "Maintenance", href: "/admin/maintenance", icon: Wrench },
     { label: t("reportManagement"), href: "/admin/reports", icon: BarChart3 },
     { label: t("notificationManagement"), href: "/admin/notifications", icon: Bell },
-    { label: "Invoices", href: "/admin/invoices", icon: FileText },
     { label: t("settings"), href: "/admin/settings", icon: Settings },
   ];
 

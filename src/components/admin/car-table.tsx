@@ -27,7 +27,7 @@ import {
   Filter,
   X,
 } from "lucide-react";
-import Link from "next/link";
+import { Link } from "@/i18n/navigation";
 
 interface AdminCar {
   id: string;
@@ -61,6 +61,8 @@ interface CarTableProps {
   onBrandFilter: (v: string) => void;
   onPageChange: (p: number) => void;
   onDelete: (id: string) => void;
+  onAdd: () => void;
+  onEdit: (id: string) => void;
 }
 
 const STATUS_COLORS: Record<string, string> = {
@@ -86,6 +88,8 @@ export function CarTable({
   onBrandFilter,
   onPageChange,
   onDelete,
+  onAdd,
+  onEdit,
 }: CarTableProps) {
   const t = useTranslations("admin");
   const [showFilters, setShowFilters] = useState(false);
@@ -122,12 +126,10 @@ export function CarTable({
             </span>
           )}
         </Button>
-        <Link href="/admin/cars/new">
-          <Button>
-            <Plus className="h-4 w-4 mr-2" />
-            {t("addCar")}
-          </Button>
-        </Link>
+        <Button onClick={onAdd}>
+          <Plus className="h-4 w-4 mr-2" />
+          {t("addCar")}
+        </Button>
       </div>
 
       {/* Filters Row */}
@@ -297,13 +299,8 @@ export function CarTable({
                                 <Eye className="h-4 w-4" /> {t("viewPublic")}
                               </Link>
                             </DropdownMenuItem>
-                            <DropdownMenuItem>
-                              <Link
-                                href={`/admin/cars/${car.id}`}
-                                className="flex items-center gap-2"
-                              >
-                                <Pencil className="h-4 w-4" /> {t("edit")}
-                              </Link>
+                            <DropdownMenuItem onClick={() => onEdit(car.id)}>
+                              <Pencil className="h-4 w-4" /> {t("edit")}
                             </DropdownMenuItem>
                             <DropdownMenuItem
                               className="text-destructive"

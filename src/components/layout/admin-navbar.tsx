@@ -1,7 +1,6 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { Link, usePathname } from "@/i18n/navigation";
 import {
   Search,
   Bell,
@@ -24,12 +23,18 @@ import {
 import { useAuth } from "@/hooks/use-auth";
 import { useState } from "react";
 
+function stripLocale(path: string): string {
+  return path.replace(/^\/(en|fr|ar)(\/|$)/, "/") || "/";
+}
+
 interface AdminNavbarProps {
   onToggleSidebar?: () => void;
 }
 
 export function AdminNavbar({ onToggleSidebar }: AdminNavbarProps) {
-  const pathname = usePathname();
+  const rawPathname = usePathname();
+  const locale = rawPathname.match(/^\/(en|fr|ar)/)?.[1] || "fr";
+  const pathname = stripLocale(rawPathname);
   const { profile } = useAuth();
   const [searchQuery, setSearchQuery] = useState("");
 
@@ -115,15 +120,15 @@ export function AdminNavbar({ onToggleSidebar }: AdminNavbarProps) {
               <p className="text-xs text-muted-foreground">{profile?.email}</p>
             </div>
             <DropdownMenuSeparator />
-            <DropdownMenuItem onClick={() => (window.location.href = "/admin")}>
+            <DropdownMenuItem onClick={() => (window.location.href = "/" + locale + "/admin")}>
               <LayoutDashboard className="mr-2 h-4 w-4" />
               Dashboard
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => (window.location.href = "/admin/settings")}>
+            <DropdownMenuItem onClick={() => (window.location.href = "/" + locale + "/admin/settings")}>
               <Settings className="mr-2 h-4 w-4" />
               Settings
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => (window.location.href = "/")}>
+            <DropdownMenuItem onClick={() => (window.location.href = "/" + locale)}>
               <Car className="mr-2 h-4 w-4" />
               View Site
             </DropdownMenuItem>

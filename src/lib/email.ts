@@ -3,7 +3,7 @@ import { config } from "@/config";
 
 export const resend = new Resend(config.resend.apiKey);
 
-export const FROM_EMAIL = "DriveRent Maroc <notifications@driverent.ma>";
+export const FROM_EMAIL = "DriveRent <onboarding@resend.dev>";
 
 interface SendEmailOptions {
   to: string;
@@ -13,23 +13,23 @@ interface SendEmailOptions {
 }
 
 export async function sendEmail({ to, subject, html, replyTo }: SendEmailOptions) {
-  try {
-    if (!config.resend.apiKey || config.resend.apiKey.includes("your_resend")) {
-      console.log("[Email] Resend not configured, skipping email:", subject);
-      return { success: true, skipped: true };
-    }
+  if (!config.resend.apiKey || config.resend.apiKey.includes("your_resend")) {
+    console.error("[Email] RESEND_API_KEY is not set in .env.local");
+    return { success: false, error: "Email service not configured" };
+  }
 
-    await resend.emails.send({
-      from: FROM_EMAIL,
-      to,
-      subject,
-      html,
-      replyTo: replyTo || "contact@driverent.ma",
-    });
+  const { data, error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to,
+    subject,
+    html,
+    replyTo: replyTo || "contact@driverent.ma",
+  });
 
-    return { success: true };
-  } catch (error) {
-    console.error("[Email] Failed to send:", error);
+  if (error) {
+    console.error("[Email] Resend error:", error);
     return { success: false, error };
   }
+
+  return { success: true, data };
 }

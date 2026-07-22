@@ -1,10 +1,17 @@
 "use client";
 
-import Link from "next/link";
+import { Link, usePathname, useRouter } from "@/i18n/navigation";
 import { useTranslations } from "next-intl";
-import { usePathname, useRouter } from "@/i18n/navigation";
 import { cn } from "@/lib/utils";
 import { NAV_LINKS } from "@/lib/constants";
+
+function extractLocale(path: string): string {
+  return path.match(/^\/(en|fr|ar)/)?.[1] || "fr";
+}
+
+function stripLocale(path: string): string {
+  return path.replace(/^\/(en|fr|ar)(\/|$)/, "/") || "/";
+}
 import {
   Car,
   Menu,
@@ -33,6 +40,7 @@ import { LanguageSwitcher } from "@/components/shared/language-switcher";
 export function Navbar() {
   const t = useTranslations("nav");
   const pathname = usePathname();
+  const locale = extractLocale(pathname);
   const router = useRouter();
   const { setTheme, resolvedTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -80,7 +88,7 @@ export function Navbar() {
               href={link.href}
               className={cn(
                 "px-4 py-2 text-sm font-medium rounded-md transition-colors hover:bg-accent hover:text-accent-foreground",
-                pathname === link.href
+                stripLocale(pathname) === link.href
                   ? "bg-accent text-accent-foreground"
                   : "text-muted-foreground"
               )}
@@ -141,17 +149,17 @@ export function Navbar() {
                   </p>
                 </div>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={() => (window.location.href = "/dashboard")}>
+                <DropdownMenuItem onClick={() => (window.location.href = "/" + locale + "/dashboard")}>
                   <LayoutDashboard className="mr-2 h-4 w-4" />
                   {t("dashboard")}
                 </DropdownMenuItem>
                 {(profile?.role === "ADMIN" || profile?.role === "SUPER_ADMIN" || profile?.role === "MANAGER") && (
-                  <DropdownMenuItem onClick={() => (window.location.href = "/admin")}>
+                  <DropdownMenuItem onClick={() => (window.location.href = "/" + locale + "/admin")}>
                     <Settings className="mr-2 h-4 w-4" />
                     {t("adminPanel")}
                   </DropdownMenuItem>
                 )}
-                <DropdownMenuItem onClick={() => (window.location.href = "/dashboard/settings")}>
+                <DropdownMenuItem onClick={() => (window.location.href = "/" + locale + "/dashboard/settings")}>
                   <Settings className="mr-2 h-4 w-4" />
                   {t("settings")}
                 </DropdownMenuItem>
@@ -177,7 +185,7 @@ export function Navbar() {
               </Link>
               <Link
                 href="/sign-up"
-                className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground px-3 py-1.5 text-sm font-medium hover:bg-primary/80 transition-colors"
+                className="inline-flex items-center justify-center rounded-lg bg-black text-white hover:bg-neutral-800 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/80 px-3 py-1.5 text-sm font-medium transition-colors"
               >
                 {t("signUp")}
               </Link>
@@ -209,7 +217,7 @@ export function Navbar() {
                 onClick={() => setMobileMenuOpen(false)}
                 className={cn(
                   "px-4 py-3 text-sm font-medium rounded-md transition-colors hover:bg-accent",
-                  pathname === link.href
+                  stripLocale(pathname) === link.href
                     ? "bg-accent text-accent-foreground"
                     : "text-muted-foreground"
                 )}
@@ -229,7 +237,7 @@ export function Navbar() {
                 <Link
                   href="/sign-up"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="inline-flex items-center justify-center rounded-lg bg-primary text-primary-foreground px-4 py-2 text-sm font-medium hover:bg-primary/80 transition-colors"
+                  className="inline-flex items-center justify-center rounded-lg bg-black text-white hover:bg-neutral-800 dark:bg-primary dark:text-primary-foreground dark:hover:bg-primary/80 px-4 py-2 text-sm font-medium transition-colors"
                 >
                   {t("signUp")}
                 </Link>

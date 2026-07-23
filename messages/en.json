@@ -190,6 +190,7 @@
     "lastNamePlaceholder": "Doe",
     "sendVerificationCode": "Send Verification Code",
     "sendingCode": "Sending code...",
+    "signingUp": "Signing up...",
     "sendCodeFailed": "Failed to send code. Please try again.",
     "verifyAndSignIn": "Verify & Sign In",
     "verifyAndCreateAccount": "Verify & Create Account",
@@ -205,6 +206,7 @@
     "noAccount": "Don't have an account?",
     "hasAccount": "Already have an account?",
     "alreadyHaveAccount": "Already have an account?",
+    "signIn": "Sign In",
     "signUp": "Sign Up",
     "authConfiguring": "Authentication is being configured. Please set up your Clerk keys in",
     "clerkConfigMessage": "Authentication is being configured. Please set up your Clerk keys in",
@@ -457,7 +459,9 @@
     "cancellationDetail": "Cancel up to 24 hours before pickup"
   },
   "dashboard": {
+    "dashboard": "Dashboard",
     "overview": "Overview",
+    "profile": "Profile",
     "welcomeBack": "Welcome back!",
     "overviewSubtitle": "Here's an overview of your account.",
     "activeBookings": "Active Bookings",
@@ -1009,7 +1013,11 @@
     "recentActivity": {
       "title": "Recent Activity",
       "subtitle": "Latest events and actions",
-      "noActivity": "No recent activity"
+      "noActivity": "No recent activity",
+      "justNow": "just now",
+      "minutesAgo": "{count}m ago",
+      "hoursAgo": "{count}h ago",
+      "daysAgo": "{count}d ago"
     },
     "quickActions": {
       "title": "Quick Actions",

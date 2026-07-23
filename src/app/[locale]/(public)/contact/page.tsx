@@ -91,10 +91,10 @@ function FadeIn({
 }
 
 const GLASS_STYLE = {
-  background: "rgba(17,24,39,.82)",
+  background: "var(--color-card)",
   backdropFilter: "blur(18px)",
   WebkitBackdropFilter: "blur(18px)",
-  border: "1px solid rgba(255,255,255,.12)",
+  border: "1px solid var(--color-border)",
 };
 
 /* ═══════════════════════════════════════════════════════════
@@ -215,7 +215,7 @@ export default function ContactPage() {
       <svg className={className} viewBox="0 0 24 24" fill="currentColor">
         <path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1v-3.5a6.37 6.37 0 0 0-.79-.05A6.34 6.34 0 0 0 3.15 15.2a6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.34-6.34V8.87a8.28 8.28 0 0 0 4.87 1.56V6.98a4.83 4.83 0 0 1-1.11-.29z" />
       </svg>
-    ), label: "TikTok", href: "https://tiktok.com/@driverent", color: "hover:bg-gray-900 dark:hover:bg-white dark:hover:text-gray-900" },
+    ), label: "TikTok", href: "https://tiktok.com/@driverent", color: "hover:bg-foreground hover:text-background" },
     { icon: Linkedin, label: "LinkedIn", href: "https://linkedin.com/company/driverent", color: "hover:bg-blue-700" },
     { icon: Star, label: "Google Reviews", href: "https://g.page/driverent/review", color: "hover:bg-amber-500" },
   ];
@@ -240,7 +240,7 @@ export default function ContactPage() {
 
         <div className="relative h-full container mx-auto px-4 flex flex-col justify-center">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm text-gray-400 mb-6 animate-fade-in-up">
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6 animate-fade-in-up">
             <Home className="h-3.5 w-3.5" />
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <ChevronRight className="h-3 w-3" />
@@ -257,7 +257,7 @@ export default function ContactPage() {
               Our Team
             </span>
           </h1>
-          <p className="text-gray-300 mt-4 max-w-xl text-lg leading-relaxed animate-fade-in-up-delay-2">
+          <p className="text-muted-foreground mt-4 max-w-xl text-lg leading-relaxed animate-fade-in-up-delay-2">
             {t("heroDescription")}
           </p>
           <div className="flex flex-wrap gap-3 mt-8 animate-fade-in-up-delay-3">
@@ -268,7 +268,7 @@ export default function ContactPage() {
               </Button>
             </a>
             <Link href="/cars">
-              <Button size="lg" variant="outline" className="dark:border-white/20 dark:text-white dark:hover:bg-white/10 rounded-xl">
+              <Button size="lg" variant="outline" className="rounded-xl">
                 <Car className="mr-2 h-4 w-4" />
                 Browse Fleet
               </Button>
@@ -597,7 +597,7 @@ export default function ContactPage() {
             <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 max-w-3xl mx-auto leading-tight">
               Ready to Drive Across Morocco?
             </h2>
-            <p className="text-gray-300 text-lg max-w-xl mx-auto mb-10">
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto mb-10">
               Book your premium vehicle today and experience the best of Moroccan roads
             </p>
             <div className="flex flex-wrap justify-center gap-4">
@@ -608,7 +608,7 @@ export default function ContactPage() {
                 </Button>
               </Link>
               <Link href="/cars">
-                <Button size="lg" variant="outline" className="dark:border-white/20 dark:text-white dark:hover:bg-white/10 rounded-xl">
+              <Button size="lg" variant="outline" className="rounded-xl">
                   Browse Fleet
                 </Button>
               </Link>

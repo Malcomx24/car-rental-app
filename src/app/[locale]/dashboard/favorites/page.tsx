@@ -96,7 +96,7 @@ export default function DashboardFavoritesPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between mt-3 pt-3 border-t">
-                  <span className="text-lg font-bold">${Number(car.pricePerDay).toFixed(0)}<span className="text-xs text-muted-foreground font-normal">{tc("perDay")}</span></span>
+                  <span className="text-lg font-bold">MAD {Number(car.pricePerDay).toFixed(0)}<span className="text-xs text-muted-foreground font-normal">{tc("perDay")}</span></span>
                   <div className="flex gap-2">
                     <Link href={`/book/${car.id}`}><Button size="sm">{tCars("book")}</Button></Link>
                     <Button size="sm" variant="ghost" onClick={() => removeFavorite(car.id)}>

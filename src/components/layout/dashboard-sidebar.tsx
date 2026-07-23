@@ -19,12 +19,12 @@ export function DashboardSidebar() {
   const [open, setOpen] = useState(false);
 
   const navLinks = [
-    { label: t("overview"), href: "/dashboard" },
+    { label: t("dashboard"), href: "/dashboard" },
     { label: t("myBookings"), href: "/dashboard/bookings" },
     { label: t("favorites"), href: "/dashboard/favorites" },
     { label: t("invoices"), href: "/dashboard/invoices" },
     { label: t("notifications"), href: "/dashboard/notifications" },
-    { label: t("notificationPreferences"), href: "/dashboard/notifications/preferences" },
+    { label: t("profile"), href: "/dashboard/profile" },
     { label: tc("settings"), href: "/dashboard/settings" },
   ];
 

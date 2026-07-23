@@ -209,9 +209,9 @@ function FaqItem({
   onToggle: () => void;
 }) {
   return (
-    <div className="border border-white/10 rounded-2xl overflow-hidden transition-all duration-300 hover:border-white/20">
+    <div className="border border-border rounded-2xl overflow-hidden transition-all duration-300 hover:border-primary/30">
       <button
-        className="w-full flex items-center gap-4 p-5 text-left bg-white/[0.02] hover:bg-white/[0.05] transition-colors"
+        className="w-full flex items-center gap-4 p-5 text-left bg-muted/50 hover:bg-muted transition-colors"
         onClick={onToggle}
       >
         <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center shrink-0">
@@ -223,7 +223,7 @@ function FaqItem({
         />
       </button>
       {isOpen && (
-        <div className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed border-t border-white/5 pt-4">
+        <div className="px-5 pb-5 text-sm text-muted-foreground leading-relaxed border-t border-border pt-4">
           {a}
         </div>
       )}
@@ -268,7 +268,7 @@ export default function LocationsPage() {
 
         <div className="relative h-full container mx-auto px-4 flex flex-col justify-center">
           {/* Breadcrumb */}
-          <nav className="flex items-center gap-2 text-sm text-gray-400 mb-6 animate-fade-in-up">
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6 animate-fade-in-up">
             <Home className="h-3.5 w-3.5" />
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
             <ChevronRight className="h-3 w-3" />
@@ -285,7 +285,7 @@ export default function LocationsPage() {
               Morocco
             </span>
           </h1>
-          <p className="text-gray-300 mt-4 max-w-xl text-lg leading-relaxed animate-fade-in-up-delay-2">
+          <p className="text-muted-foreground mt-4 max-w-xl text-lg leading-relaxed animate-fade-in-up-delay-2">
             {t("heroDescription", { count: activeLocations.length > 0 ? activeLocations.length : "3+" })}
           </p>
         </div>
@@ -296,13 +296,7 @@ export default function LocationsPage() {
           ═══════════════════════════════════════════ */}
       <section className="container mx-auto px-4 -mt-16 relative z-10 mb-16">
         <div
-          className="rounded-2xl p-6 md:p-8 shadow-2xl"
-          style={{
-            background: "rgba(17,24,39,.88)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            border: "1px solid rgba(255,255,255,.1)",
-          }}
+          className="rounded-2xl p-6 md:p-8 shadow-2xl bg-card border border-border backdrop-blur-xl"
         >
           <div className="flex items-center gap-3 mb-6">
             <div className="h-10 w-10 rounded-xl bg-amber-500/10 flex items-center justify-center">
@@ -310,13 +304,13 @@ export default function LocationsPage() {
             </div>
             <div>
               <h2 className="text-white font-semibold text-lg">{t("mapTitle")}</h2>
-              <p className="text-gray-400 text-sm">{t("mapPlaceholderDesc")}</p>
+              <p className="text-muted-foreground text-sm">{t("mapPlaceholderDesc")}</p>
             </div>
           </div>
 
           {isLoading ? (
             <div className="flex items-center justify-center py-20">
-              <Loader2 className="h-8 w-8 animate-spin text-gray-500" />
+              <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
             </div>
           ) : (
             <MoroccoMap
@@ -545,7 +539,7 @@ export default function LocationsPage() {
           {SERVICE_AREAS.map((area) => (
             <span
               key={area}
-              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-white/10 bg-white/[0.03] text-sm font-medium text-foreground hover:bg-primary/10 hover:border-primary/30 hover:text-primary transition-all duration-300 cursor-default"
+              className="inline-flex items-center gap-2 px-5 py-2.5 rounded-full border border-border bg-muted/30 text-sm font-medium text-foreground hover:bg-primary/10 hover:border-primary/30 hover:text-primary transition-all duration-300 cursor-default"
             >
               <MapPin className="h-3.5 w-3.5 text-primary/60" />
               {area}

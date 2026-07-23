@@ -34,20 +34,20 @@ export async function Footer() {
   ];
 
   return (
-    <footer className="border-t bg-gray-950 text-gray-300">
+    <footer className="border-t bg-background text-muted-foreground">
       {/* Main footer */}
       <div className="container mx-auto px-4 py-12">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-10">
           {/* Brand */}
           <div className="lg:col-span-2 space-y-4">
-            <Link href="/" className="flex items-center gap-2 font-bold text-xl text-white">
-              <Car className="h-6 w-6" />
+            <Link href="/" className="flex items-center gap-2 font-bold text-xl text-foreground">
+              <Car className="h-6 w-6 text-primary" />
               <span>DriveRent</span>
             </Link>
-            <p className="text-sm text-gray-400 max-w-xs leading-relaxed">
+            <p className="text-sm max-w-xs leading-relaxed">
               {t("description")}
             </p>
-            <div className="flex items-center gap-1 text-sm text-gray-500">
+            <div className="flex items-center gap-1 text-sm text-muted-foreground">
               <span>Made with</span>
               <span className="text-red-400">&#9829;</span>
               <span>in Morocco</span>
@@ -56,13 +56,13 @@ export async function Footer() {
 
           {/* Company */}
           <div>
-            <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wider">{t("company")}</h4>
+            <h4 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">{t("company")}</h4>
             <ul className="space-y-2.5">
               {companyLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                    className="text-sm hover:text-primary transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -73,13 +73,13 @@ export async function Footer() {
 
           {/* Support */}
           <div>
-            <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wider">{t("support")}</h4>
+            <h4 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">{t("support")}</h4>
             <ul className="space-y-2.5">
               {supportLinks.map((link) => (
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                    className="text-sm hover:text-primary transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -90,13 +90,13 @@ export async function Footer() {
 
           {/* Locations */}
           <div>
-            <h4 className="font-semibold text-white mb-4 text-sm uppercase tracking-wider">{t("locationsTitle")}</h4>
+            <h4 className="font-semibold text-foreground mb-4 text-sm uppercase tracking-wider">{t("locationsTitle")}</h4>
             <ul className="space-y-2.5">
               {locationLinks.map((link, i) => (
                 <li key={i}>
                   <Link
                     href={link.href}
-                    className="text-sm text-gray-400 hover:text-white transition-colors"
+                    className="text-sm hover:text-primary transition-colors"
                   >
                     {link.label}
                   </Link>
@@ -107,8 +107,8 @@ export async function Footer() {
         </div>
 
         {/* Bottom bar */}
-        <div className="mt-10 pt-8 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
-          <p className="text-sm text-gray-500">
+        <div className="mt-10 pt-8 border-t flex flex-col md:flex-row items-center justify-between gap-4">
+          <p className="text-sm">
             &copy; {new Date().getFullYear()} DriveRent. {t("copyright")}
           </p>
           <div className="flex items-center gap-6">
@@ -116,7 +116,7 @@ export async function Footer() {
               <Link
                 key={link.href}
                 href={link.href}
-                className="text-xs text-gray-500 hover:text-gray-300 transition-colors"
+                className="text-xs hover:text-primary transition-colors"
               >
                 {link.label}
               </Link>

@@ -23,12 +23,12 @@ export const ADMIN_NAV_LINKS = [
 ] as const;
 
 export const DASHBOARD_NAV_LINKS = [
-  { label: "Overview", href: "/dashboard", icon: "LayoutDashboard" },
+  { label: "Dashboard", href: "/dashboard", icon: "LayoutDashboard" },
   { label: "My Bookings", href: "/dashboard/bookings", icon: "Calendar" },
   { label: "Favorites", href: "/dashboard/favorites", icon: "Heart" },
   { label: "Invoices", href: "/dashboard/invoices", icon: "FileText" },
   { label: "Notifications", href: "/dashboard/notifications", icon: "Bell" },
-  { label: "Notification Preferences", href: "/dashboard/notifications/preferences", icon: "Settings" },
+  { label: "Profile", href: "/dashboard/profile", icon: "User" },
   { label: "Settings", href: "/dashboard/settings", icon: "Settings" },
 ] as const;
 

@@ -190,6 +190,7 @@
     "lastNamePlaceholder": "محمد",
     "sendVerificationCode": "إرسال رمز التحقق",
     "sendingCode": "جارٍ إرسال الرمز...",
+    "signingUp": "جارٍ التسجيل...",
     "sendCodeFailed": "فشل في إرسال الرمز. يرجى المحاولة مرة أخرى.",
     "verifyAndSignIn": "تحقق وسجّل الدخول",
     "verifyAndCreateAccount": "تحقق وأنشئ الحساب",
@@ -205,6 +206,7 @@
     "noAccount": "ليس لديك حساب؟",
     "hasAccount": "لديك حساب بالفعل؟",
     "alreadyHaveAccount": "لديك حساب بالفعل؟",
+    "signIn": "تسجيل الدخول",
     "signUp": "إنشاء حساب",
     "authConfiguring": "جارٍ إعداد المصادقة. يرجى تعيين مفاتيح Clerk في",
     "clerkConfigMessage": "جارٍ إعداد المصادقة. يرجى تعيين مفاتيح Clerk في",
@@ -459,7 +461,9 @@
     "cancellationDetail": "يمكنك الإلغاء قبل 24 ساعة من الاستلام"
   },
   "dashboard": {
+    "dashboard": "لوحة التحكم",
     "overview": "نظرة عامة",
+    "profile": "الملف الشخصي",
     "welcomeBack": "مرحباً بعودتك!",
     "overviewSubtitle": "إليك نظرة عامة على حسابك.",
     "activeBookings": "الحجوزات النشطة",
@@ -1009,7 +1013,11 @@
     "recentActivity": {
       "title": "النشاط الأخير",
       "subtitle": "آخر الأحداث والإجراءات",
-      "noActivity": "لا يوجد نشاط حديث"
+      "noActivity": "لا يوجد نشاط حديث",
+      "justNow": "الآن",
+      "minutesAgo": "منذ {count}د",
+      "hoursAgo": "منذ {count}س",
+      "daysAgo": "منذ {count}ي"
     },
     "quickActions": {
       "title": "إجراءات سريعة",

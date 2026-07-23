@@ -77,10 +77,10 @@ function FadeIn({
 }
 
 const GLASS_STYLE = {
-  background: "rgba(17,24,39,.82)",
+  background: "var(--color-card)",
   backdropFilter: "blur(18px)",
   WebkitBackdropFilter: "blur(18px)",
-  border: "1px solid rgba(255,255,255,.12)",
+  border: "1px solid var(--color-border)",
 };
 
 export function AboutPageClient() {
@@ -104,10 +104,10 @@ export function AboutPageClient() {
         <div className="absolute bottom-20 left-20 h-60 w-60 bg-orange-500/8 rounded-full blur-3xl animate-float" style={{ animationDelay: "3s" }} />
 
         <div className="relative h-full container mx-auto px-4 flex flex-col justify-center">
-          <nav className="flex items-center gap-2 text-sm text-gray-400 mb-6 animate-fade-in-up">
+          <nav className="flex items-center gap-2 text-sm text-muted-foreground mb-6 animate-fade-in-up">
             <Home className="h-3.5 w-3.5" />
             <Link href="/" className="hover:text-white transition-colors">Home</Link>
-            <span className="text-gray-600">/</span>
+            <span className="text-muted-foreground/60">/</span>
             <span className="text-white">About Us</span>
           </nav>
 
@@ -121,7 +121,7 @@ export function AboutPageClient() {
               Since 2015
             </span>
           </h1>
-          <p className="text-gray-300 mt-4 max-w-xl text-lg leading-relaxed animate-fade-in-up-delay-2">
+          <p className="text-muted-foreground mt-4 max-w-xl text-lg leading-relaxed animate-fade-in-up-delay-2">
             {t("about.heroDescription")}
           </p>
           <div className="flex flex-wrap gap-3 mt-8 animate-fade-in-up-delay-3">
@@ -132,7 +132,7 @@ export function AboutPageClient() {
               </Button>
             </Link>
             <Link href="/contact">
-              <Button size="lg" variant="outline" className="dark:border-white/20 dark:text-white dark:hover:bg-white/10 rounded-xl">
+                <Button size="lg" variant="outline" className="rounded-xl">
                 {t("about.contactUs")}
               </Button>
             </Link>
@@ -163,7 +163,7 @@ export function AboutPageClient() {
                   </div>
                   <div>
                     <p className="text-2xl font-bold text-white">10+</p>
-                    <p className="text-xs text-gray-400">Years of Excellence</p>
+                    <p className="text-xs text-muted-foreground">Years of Excellence</p>
                   </div>
                 </div>
               </div>
@@ -399,7 +399,7 @@ export function AboutPageClient() {
                     <h3 className="text-white text-xl font-bold mb-2">{city.name}</h3>
                     <p className="text-white/80 text-sm leading-relaxed mb-4">{city.desc}</p>
                     <Link href="/locations">
-                      <Button size="sm" variant="outline" className="dark:border-white/30 dark:text-white dark:hover:bg-white/10 border-white/30 text-white hover:bg-white/10 rounded-xl text-xs font-semibold">
+                      <Button size="sm" variant="outline" className="border-white/30 text-white hover:bg-white/10 rounded-xl text-xs font-semibold">
                         Explore
                         <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
                       </Button>
@@ -550,7 +550,7 @@ export function AboutPageClient() {
             <h2 className="text-3xl md:text-5xl font-bold text-white mb-6 max-w-3xl mx-auto leading-tight">
               Ready for Your Next Journey?
             </h2>
-            <p className="text-gray-300 text-lg max-w-xl mx-auto mb-10">
+            <p className="text-muted-foreground text-lg max-w-xl mx-auto mb-10">
               Join thousands of satisfied customers who trust DriveRent for their travels across Morocco
             </p>
             <div className="flex flex-wrap justify-center gap-4">
@@ -561,7 +561,7 @@ export function AboutPageClient() {
                 </Button>
               </Link>
               <Link href="/contact">
-                <Button size="lg" variant="outline" className="dark:border-white/20 dark:text-white dark:hover:bg-white/10 rounded-xl">
+              <Button size="lg" variant="outline" className="rounded-xl">
                   {t("about.contactUs")}
                 </Button>
               </Link>

@@ -264,7 +264,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                   <div>
                     <p className="text-sm text-muted-foreground">{t("startingFrom")}</p>
                     <div className="flex items-baseline gap-1">
-                      <span className="text-4xl font-bold">${Number(car.pricePerDay).toFixed(0)}</span>
+                      <span className="text-4xl font-bold">MAD {Number(car.pricePerDay).toFixed(0)}</span>
                       <span className="text-muted-foreground">/{t("day")}</span>
                     </div>
                   </div>
@@ -275,19 +275,19 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                       {car.weekendPricePerDay && (
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">{t("weekendRate")}</span>
-                          <span className="font-medium">${Number(car.weekendPricePerDay).toFixed(0)}/{t("day")}</span>
+                           <span className="font-medium">MAD {Number(car.weekendPricePerDay).toFixed(0)}/{t("day")}</span>
                         </div>
                       )}
                       {car.weeklyPrice && (
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">{t("weeklyRate")}</span>
-                          <span className="font-medium">${Number(car.weeklyPrice).toFixed(0)}/{t("week")}</span>
+                           <span className="font-medium">MAD {Number(car.weeklyPrice).toFixed(0)}/{t("week")}</span>
                         </div>
                       )}
                       {car.monthlyPrice && (
                         <div className="flex justify-between">
                           <span className="text-muted-foreground">{t("monthlyRate")}</span>
-                          <span className="font-medium">${Number(car.monthlyPrice).toFixed(0)}/{t("month")}</span>
+                           <span className="font-medium">MAD {Number(car.monthlyPrice).toFixed(0)}/{t("month")}</span>
                         </div>
                       )}
                     </div>
@@ -306,7 +306,7 @@ export default function CarDetailPage({ params }: { params: Promise<{ id: string
                   {car.securityDeposit > 0 && (
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Info className="h-4 w-4 shrink-0" />
-                      <span>${Number(car.securityDeposit).toFixed(0)} {t("refundableDeposit")}</span>
+                       <span>MAD {Number(car.securityDeposit).toFixed(0)} {t("refundableDeposit")}</span>
                     </div>
                   )}
 

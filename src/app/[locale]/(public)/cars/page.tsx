@@ -1,6 +1,8 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
+import { useRouter } from "@/i18n/navigation";
 import { Link } from "@/i18n/navigation";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -77,8 +79,10 @@ const FUEL_LABELS: Record<string, string> = {
   PLUG_IN_HYBRID: "PHEV",
 };
 
-export default function CarsPage() {
+function CarsPageContent() {
   const t = useTranslations("cars");
+  const searchParams = useSearchParams();
+  const router = useRouter();
   const [cars, setCars] = useState<CarItem[]>([]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
@@ -101,34 +105,91 @@ export default function CarsPage() {
   });
   const { favoriteIds, toggleFavorite } = useFavorites();
 
+  // Booking search params from homepage
+  const [pickupDate, setPickupDate] = useState("");
+  const [returnDate, setReturnDate] = useState("");
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [hasBookingParams, setHasBookingParams] = useState(false);
+
+  // Read URL params on mount
+  useEffect(() => {
+    const loc = searchParams.get("location");
+    const pickup = searchParams.get("pickup");
+    const ret = searchParams.get("return");
+    if (pickup && ret) {
+      setPickupDate(pickup);
+      setReturnDate(ret);
+      setHasBookingParams(true);
+    }
+    if (loc) {
+      setPickupLocation(loc);
+    }
+  }, [searchParams]);
+
   const fetchCars = useCallback(async () => {
     setLoading(true);
     try {
-      const params = new URLSearchParams();
-      if (search) params.set("search", search);
-      if (brandId) params.set("brandId", brandId);
-      if (categoryId) params.set("categoryId", categoryId);
-      if (fuelType) params.set("fuelType", fuelType);
-      if (transmission) params.set("transmission", transmission);
-      if (minPrice) params.set("minPrice", minPrice);
-      if (maxPrice) params.set("maxPrice", maxPrice);
-      params.set("sort", sort);
-      params.set("page", String(page));
-      params.set("limit", "12");
+      // If we have booking dates, use the availability endpoint
+      if (pickupDate && returnDate) {
+        const params = new URLSearchParams({
+          pickupDate,
+          returnDate,
+          page: String(page),
+          limit: "50",
+        });
+        const res = await fetch(`/api/cars/availability?${params.toString()}`);
+        const json = await res.json();
+        if (json.success) {
+          let results = json.data;
+          // Apply client-side filters on top of availability results
+          if (search) {
+            const q = search.toLowerCase();
+            results = results.filter(
+              (c: CarItem) =>
+                c.name.toLowerCase().includes(q) ||
+                c.brand.name.toLowerCase().includes(q) ||
+                c.description?.toLowerCase().includes(q)
+            );
+          }
+          if (brandId) results = results.filter((c: CarItem) => (c as unknown as { brandId: string }).brandId === brandId);
+          if (categoryId) results = results.filter((c: CarItem) => (c as unknown as { categoryId: string }).categoryId === categoryId);
+          if (fuelType) results = results.filter((c: CarItem) => c.fuelType === fuelType);
+          if (transmission) results = results.filter((c: CarItem) => c.transmission === transmission);
+          if (minPrice) results = results.filter((c: CarItem) => c.pricePerDay >= Number(minPrice));
+          if (maxPrice) results = results.filter((c: CarItem) => c.pricePerDay <= Number(maxPrice));
 
-      const res = await fetch(`/api/cars?${params.toString()}`);
-      const json = await res.json();
-      if (json.success) {
-        setCars(json.data);
-        setTotal(json.pagination.total);
-        setTotalPages(json.pagination.totalPages);
+          setTotal(results.length);
+          setTotalPages(1);
+          setCars(results);
+        }
+      } else {
+        // No booking dates — use normal cars API
+        const params = new URLSearchParams();
+        if (search) params.set("search", search);
+        if (brandId) params.set("brandId", brandId);
+        if (categoryId) params.set("categoryId", categoryId);
+        if (fuelType) params.set("fuelType", fuelType);
+        if (transmission) params.set("transmission", transmission);
+        if (minPrice) params.set("minPrice", minPrice);
+        if (maxPrice) params.set("maxPrice", maxPrice);
+        params.set("sort", sort);
+        params.set("page", String(page));
+        params.set("limit", "12");
+
+        const res = await fetch(`/api/cars?${params.toString()}`);
+        const json = await res.json();
+        if (json.success) {
+          setCars(json.data);
+          setTotal(json.pagination.total);
+          setTotalPages(json.pagination.totalPages);
+        }
       }
     } catch (err) {
       console.error(err);
     } finally {
       setLoading(false);
     }
-  }, [search, brandId, categoryId, fuelType, transmission, minPrice, maxPrice, sort, page]);
+  }, [search, brandId, categoryId, fuelType, transmission, minPrice, maxPrice, sort, page, pickupDate, returnDate]);
 
   useEffect(() => {
     fetch("/api/cars/filters")
@@ -145,7 +206,7 @@ export default function CarsPage() {
   useEffect(() => {
     const timer = setTimeout(() => setPage(1), 300);
     return () => clearTimeout(timer);
-  }, [search, brandId, categoryId, fuelType, transmission, minPrice, maxPrice, sort]);
+  }, [search, brandId, categoryId, fuelType, transmission, minPrice, maxPrice, sort, pickupDate, returnDate]);
 
   const activeFilterCount = [
     brandId,
@@ -164,6 +225,20 @@ export default function CarsPage() {
     setMinPrice("");
     setMaxPrice("");
     setSearch("");
+    setPickupDate("");
+    setReturnDate("");
+    setPickupLocation("");
+    setHasBookingParams(false);
+    // Clear URL params
+    router.replace("/cars");
+  };
+
+  const clearBookingFilters = () => {
+    setPickupDate("");
+    setReturnDate("");
+    setPickupLocation("");
+    setHasBookingParams(false);
+    router.replace("/cars");
   };
 
   /* ─── Filter Panel Content (shared between desktop sidebar & mobile sheet) ─── */
@@ -177,7 +252,7 @@ export default function CarsPage() {
         <select
           value={brandId}
           onChange={(e) => setBrandId(e.target.value)}
-          className="w-full h-10 rounded-xl border border-white/10 bg-white/5 dark:bg-white/5 px-3 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+          className="w-full h-10 rounded-xl border border-border bg-muted px-3 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
         >
           <option value="">{t("allBrands")}</option>
           {filters.brands.map((b) => (
@@ -194,7 +269,7 @@ export default function CarsPage() {
         <select
           value={categoryId}
           onChange={(e) => setCategoryId(e.target.value)}
-          className="w-full h-10 rounded-xl border border-white/10 bg-white/5 dark:bg-white/5 px-3 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+          className="w-full h-10 rounded-xl border border-border bg-muted px-3 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
         >
           <option value="">{t("allCategories")}</option>
           {filters.categories.map((c) => (
@@ -211,7 +286,7 @@ export default function CarsPage() {
         <select
           value={transmission}
           onChange={(e) => setTransmission(e.target.value)}
-          className="w-full h-10 rounded-xl border border-white/10 bg-white/5 dark:bg-white/5 px-3 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+          className="w-full h-10 rounded-xl border border-border bg-muted px-3 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
         >
           <option value="">{t("allTransmissions")}</option>
           <option value="AUTOMATIC">{t("automatic")}</option>
@@ -227,7 +302,7 @@ export default function CarsPage() {
         <select
           value={fuelType}
           onChange={(e) => setFuelType(e.target.value)}
-          className="w-full h-10 rounded-xl border border-white/10 bg-white/5 dark:bg-white/5 px-3 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+          className="w-full h-10 rounded-xl border border-border bg-muted px-3 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
         >
           <option value="">{t("allFuelTypes")}</option>
           {Object.entries(FUEL_LABELS).map(([k, v]) => (
@@ -245,7 +320,7 @@ export default function CarsPage() {
           {[2, 4, 5, 6, 7, 8].map((s) => (
             <button
               key={s}
-              className="h-9 w-9 rounded-lg border border-white/10 bg-muted/50 dark:bg-white/5 text-sm font-medium hover:bg-primary hover:text-primary-foreground transition-all"
+              className="h-9 w-9 rounded-lg border border-border bg-muted text-sm font-medium hover:bg-primary hover:text-primary-foreground transition-all"
             >
               {s}
             </button>
@@ -557,7 +632,7 @@ export default function CarsPage() {
               {t("heroTitleHighlight")}
             </span>
           </h1>
-          <p className="text-gray-300 mt-4 max-w-xl text-lg leading-relaxed animate-fade-in-up-delay-2">
+          <p className="text-muted-foreground mt-4 max-w-xl text-lg leading-relaxed animate-fade-in-up-delay-2">
             {t("heroDescription")}
           </p>
         </div>
@@ -567,41 +642,33 @@ export default function CarsPage() {
           FLOATING SEARCH CARD
           ═══════════════════════════════════════════ */}
       <div className="container mx-auto px-4 -mt-16 relative z-10 mb-12">
-        <div
-          className="rounded-2xl p-6 shadow-2xl"
-          style={{
-            background: "rgba(17,24,39,.88)",
-            backdropFilter: "blur(20px)",
-            WebkitBackdropFilter: "blur(20px)",
-            border: "1px solid rgba(255,255,255,.1)",
-          }}
-        >
+        <div className="rounded-[20px] p-6 shadow-2xl bg-card border border-border backdrop-blur-xl">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-3 items-end">
             {/* Search */}
             <div className="lg:col-span-2">
-              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 block">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">
                 {t("searchPlaceholder")}
               </label>
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <input
                   placeholder={t("searchPlaceholder")}
                   value={search}
                   onChange={(e) => setSearch(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2.5 bg-white/5 border border-white/10 rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all"
+                  className="w-full h-[52px] pl-10 pr-4 bg-muted border border-border rounded-xl text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/40 focus:border-primary/40 transition-all"
                 />
               </div>
             </div>
 
             {/* Brand */}
             <div>
-              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 block">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">
                 {t("filterBrand")}
               </label>
               <select
                 value={brandId}
                 onChange={(e) => setBrandId(e.target.value)}
-                className="w-full h-[42px] rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                className="w-full h-[52px] rounded-xl border border-border bg-muted px-3 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               >
                 <option value="">{t("allBrands")}</option>
                 {filters.brands.map((b) => (
@@ -612,13 +679,13 @@ export default function CarsPage() {
 
             {/* Category */}
             <div>
-              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 block">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">
                 {t("filterCategory")}
               </label>
               <select
                 value={categoryId}
                 onChange={(e) => setCategoryId(e.target.value)}
-                className="w-full h-[42px] rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
+                className="w-full h-[52px] rounded-xl border border-border bg-muted px-3 text-sm text-foreground focus:border-primary focus:ring-2 focus:ring-primary/20 outline-none transition-all"
               >
                 <option value="">{t("allCategories")}</option>
                 {filters.categories.map((c) => (
@@ -629,7 +696,7 @@ export default function CarsPage() {
 
             {/* Price */}
             <div>
-              <label className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-1.5 block">
+              <label className="text-xs font-medium text-muted-foreground uppercase tracking-wider mb-1.5 block">
                 {t("filterPriceRange")}
               </label>
               <div className="flex gap-1.5">
@@ -638,14 +705,14 @@ export default function CarsPage() {
                   placeholder={t("min")}
                   value={minPrice}
                   onChange={(e) => setMinPrice(e.target.value)}
-                  className="w-full h-[42px] rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  className="w-full h-[52px] rounded-xl border border-border bg-muted px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                 />
                 <input
                   type="number"
                   placeholder={t("max")}
                   value={maxPrice}
                   onChange={(e) => setMaxPrice(e.target.value)}
-                  className="w-full h-[42px] rounded-xl border border-white/10 bg-white/5 px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
+                  className="w-full h-[52px] rounded-xl border border-border bg-muted px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all"
                 />
               </div>
             </div>
@@ -653,7 +720,7 @@ export default function CarsPage() {
             {/* Search Button */}
             <Button
               variant="accent"
-              className="h-[42px] font-semibold rounded-xl"
+              className="h-[52px] font-semibold rounded-xl shadow-lg shadow-primary/20"
               onClick={() => { setPage(1); fetchCars(); }}
             >
               <Search className="h-4 w-4 mr-2" />
@@ -714,8 +781,17 @@ export default function CarsPage() {
                 <h2 className="text-2xl font-bold">
                   {loading ? t("loading") : t("resultsCount", { count: total })}
                 </h2>
-                {activeFilterCount > 0 && (
+                {(activeFilterCount > 0 || hasBookingParams) && (
                   <div className="flex flex-wrap gap-2 mt-2">
+                    {hasBookingParams && (
+                      <Badge variant="secondary" className="gap-1.5 bg-primary/10 text-primary">
+                        <MapPin className="h-3 w-3" />
+                        {pickupLocation || "Location"}
+                        {pickupDate && ` · ${pickupDate}`}
+                        {returnDate && ` → ${returnDate}`}
+                        <button onClick={clearBookingFilters}><X className="h-3 w-3" /></button>
+                      </Badge>
+                    )}
                     {brandId && (
                       <Badge variant="secondary" className="gap-1.5">
                         {filters.brands.find((b) => b.id === brandId)?.name}
@@ -820,12 +896,33 @@ export default function CarsPage() {
                 <div className="mx-auto h-20 w-20 rounded-2xl bg-muted flex items-center justify-center mb-6">
                   <Car className="h-10 w-10 text-muted-foreground/30" />
                 </div>
-                <h3 className="text-xl font-semibold mb-2">{t("noCarsFound")}</h3>
-                <p className="text-muted-foreground mb-6 max-w-md mx-auto">{t("noCarsFoundHint")}</p>
-                <Button variant="outline" onClick={clearFilters} className="gap-2">
-                  <RotateCcw className="h-4 w-4" />
-                  {t("clearFilters")}
-                </Button>
+                {hasBookingParams ? (
+                  <>
+                    <h3 className="text-xl font-semibold mb-2">No vehicles available for the selected dates</h3>
+                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">
+                      Try different dates or clear your filters to see all available vehicles.
+                    </p>
+                    <div className="flex flex-wrap justify-center gap-3">
+                      <Button variant="outline" onClick={clearBookingFilters} className="gap-2">
+                        <RotateCcw className="h-4 w-4" />
+                        Change Dates
+                      </Button>
+                      <Button variant="outline" onClick={clearFilters} className="gap-2">
+                        <X className="h-4 w-4" />
+                        Clear Filters
+                      </Button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <h3 className="text-xl font-semibold mb-2">{t("noCarsFound")}</h3>
+                    <p className="text-muted-foreground mb-6 max-w-md mx-auto">{t("noCarsFoundHint")}</p>
+                    <Button variant="outline" onClick={clearFilters} className="gap-2">
+                      <RotateCcw className="h-4 w-4" />
+                      {t("clearFilters")}
+                    </Button>
+                  </>
+                )}
               </div>
             ) : viewMode === "grid" ? (
               <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-6">
@@ -887,5 +984,13 @@ export default function CarsPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function CarsPage() {
+  return (
+    <Suspense>
+      <CarsPageContent />
+    </Suspense>
   );
 }

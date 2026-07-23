@@ -190,6 +190,7 @@
     "lastNamePlaceholder": "Dupont",
     "sendVerificationCode": "Envoyer le code de vérification",
     "sendingCode": "Envoi du code...",
+    "signingUp": "Inscription...",
     "sendCodeFailed": "Échec de l'envoi du code. Veuillez réessayer.",
     "verifyAndSignIn": "Vérifier et se connecter",
     "verifyAndCreateAccount": "Vérifier et créer le compte",
@@ -205,6 +206,7 @@
     "noAccount": "Vous n'avez pas de compte ?",
     "hasAccount": "Vous avez déjà un compte ?",
     "alreadyHaveAccount": "Vous avez déjà un compte ?",
+    "signIn": "Se connecter",
     "signUp": "S'inscrire",
     "authConfiguring": "L'authentification est en cours de configuration. Veuillez configurer vos clés Clerk dans",
     "clerkConfigMessage": "L'authentification est en cours de configuration. Veuillez configurer vos clés Clerk dans",
@@ -459,7 +461,9 @@
     "cancellationDetail": "Annulez jusqu'à 24 heures avant la récupération"
   },
   "dashboard": {
+    "dashboard": "Tableau de bord",
     "overview": "Aperçu",
+    "profile": "Profil",
     "welcomeBack": "Bon retour !",
     "overviewSubtitle": "Voici un aperçu de votre compte.",
     "activeBookings": "Réservations actives",
@@ -1009,7 +1013,11 @@
     "recentActivity": {
       "title": "Activité récente",
       "subtitle": "Derniers événements et actions",
-      "noActivity": "Aucune activité récente"
+      "noActivity": "Aucune activité récente",
+      "justNow": "à l'instant",
+      "minutesAgo": "il y a {count}m",
+      "hoursAgo": "il y a {count}h",
+      "daysAgo": "il y a {count}j"
     },
     "quickActions": {
       "title": "Actions rapides",

@@ -1,12 +1,11 @@
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
-import { db } from "@/lib/prisma";
-import { formatCurrency } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Navbar } from "@/components/layout/navbar";
 import { AnimatedCounter } from "@/components/home/animated-counter";
+import { BookingWidget } from "@/components/home/booking-widget";
 import {
   Car,
   Shield,
@@ -21,10 +20,6 @@ import {
   Quote,
   CheckCircle,
   Sparkles,
-  ChevronRight,
-  Fuel,
-  Settings2,
-  Heart,
   Plane,
   Palmtree,
   Mountain,
@@ -40,37 +35,6 @@ import {
 export default async function HomePage() {
   const t = await getTranslations("home");
 
-  let featuredCars: Array<{
-    id: string;
-    name: string;
-    slug: string;
-    pricePerDay: { toString(): string };
-    brand: { name: string };
-    category: { name: string };
-    images: Array<{ url: string; alt: string; isPrimary: boolean }>;
-    fuelType: string;
-    transmission: string;
-    seats: number;
-    isFeatured: boolean;
-    averageRating: { toString(): string };
-    totalReviews: number;
-  }> = [];
-
-  try {
-    featuredCars = await db.car.findMany({
-      where: { isFeatured: true, isPublished: true },
-      include: {
-        brand: true,
-        category: true,
-        images: { where: { isPrimary: true }, take: 1 },
-      },
-      orderBy: { createdAt: "desc" },
-      take: 6,
-    });
-  } catch {
-    featuredCars = [];
-  }
-
   const STATS = [
     { label: t("statsCars"), value: 200, suffix: "+", icon: Car },
     { label: t("statsCustomers"), value: 15000, suffix: "+", icon: Users },
@@ -85,12 +49,6 @@ export default async function HomePage() {
     { icon: MapPin, title: t("why4Title"), desc: t("why4Desc") },
     { icon: HeadphonesIcon, title: t("why5Title"), desc: t("why5Desc") },
     { icon: CheckCircle, title: t("why6Title"), desc: t("why6Desc") },
-  ];
-
-  const STEPS = [
-    { number: "01", title: t("step1Title"), description: t("step1Desc"), icon: Car },
-    { number: "02", title: t("step2Title"), description: t("step2Desc"), icon: MapPin },
-    { number: "03", title: t("step3Title"), description: t("step3Desc"), icon: Zap },
   ];
 
   const DESTINATIONS = [
@@ -148,75 +106,53 @@ export default async function HomePage() {
                 </span>{" "}
                 {t("heroTitleEnd")}
               </h1>
-              <p className="mt-6 text-lg md:text-xl text-gray-400 max-w-lg leading-relaxed animate-fade-in-up-delay-2">
+              <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-lg leading-relaxed animate-fade-in-up-delay-2">
                 {t("heroSubtitle")}
               </p>
               <div className="mt-8 flex flex-wrap gap-4 animate-fade-in-up-delay-3">
                 <Link href="/cars">
-                  <Button size="lg" className="bg-white text-black hover:bg-neutral-100 dark:bg-white dark:text-black dark:hover:bg-neutral-200 px-8 text-base font-semibold shadow-lg shadow-white/10">
+                  <Button size="lg" className="bg-primary text-primary-foreground hover:bg-primary/90 px-8 text-base font-semibold shadow-lg shadow-primary/20">
                     {t("browseFleet")}
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
                 <Link href="/about">
-                  <Button size="lg" variant="outline" className="dark:border-white/20 dark:text-white dark:hover:bg-white/10 px-8 text-base">
+              <Button size="lg" variant="outline" className="px-8 text-base">
                     {t("learnMore")}
                   </Button>
                 </Link>
               </div>
 
               {/* Trust indicators */}
-              <div className="mt-10 flex items-center gap-6 text-sm text-gray-500 animate-fade-in-up-delay-4">
+              <div className="mt-10 flex items-center gap-6 text-sm text-muted-foreground animate-fade-in-up-delay-4">
                 <div className="flex items-center gap-1.5">
                   <div className="flex -space-x-1">
                     {[...Array(5)].map((_, i) => (
                       <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
                     ))}
                   </div>
-                  <span className="text-gray-400">4.9/5</span>
+                  <span>4.9/5</span>
                 </div>
-                <div className="h-4 w-px bg-gray-700" />
+                <div className="h-4 w-px bg-border" />
                 <div className="flex items-center gap-1.5">
                   <CheckCircle className="h-4 w-4 text-green-400" />
-                  <span className="text-gray-400">{t("trustBarText")} <span className="text-gray-300 font-medium">{t("trustBarPartners")}</span></span>
+                  <span>{t("trustBarText")} <span className="font-medium">{t("trustBarPartners")}</span></span>
                 </div>
               </div>
             </div>
 
-            {/* Right: Glassmorphism booking card */}
+            {/* Right: Booking Widget */}
             <div className="hidden lg:block animate-fade-in-up-delay-2">
-              <div className="rounded-2xl p-8 shadow-2xl max-w-md ml-auto" style={{ background: "rgba(17,24,39,.82)", backdropFilter: "blur(18px)", WebkitBackdropFilter: "blur(18px)", border: "1px solid rgba(255,255,255,.12)" }}>
-                <h3 className="text-white font-semibold text-lg mb-6">{t("browseFleet")}</h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-1.5 block">Pickup Location</label>
-                    <div className="flex items-center gap-2 bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white">
-                      <MapPin className="h-4 w-4 text-gray-400" />
-                      <span className="text-gray-300">Agadir</span>
-                    </div>
-                  </div>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div>
-                      <label className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-1.5 block">From</label>
-                      <div className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white text-sm">
-                        Select date
-                      </div>
-                    </div>
-                    <div>
-                      <label className="text-gray-400 text-xs font-medium uppercase tracking-wider mb-1.5 block">To</label>
-                      <div className="bg-white/5 border border-white/10 rounded-lg px-4 py-3 text-white text-sm">
-                        Select date
-                      </div>
-                    </div>
-                  </div>
-                  <Link href="/cars" className="block">
-                    <Button variant="accent" className="w-full font-semibold py-6 text-base">
-                      {t("bookNow")}
-                      <ArrowRight className="ml-2 h-4 w-4" />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
+              <BookingWidget
+                browseFleetLabel={t("browseFleet")}
+                pickupLocationLabel="Pickup Location"
+                fromLabel="From"
+                toLabel="To"
+                selectDatePlaceholder="Select date"
+                bookNowLabel={t("bookNow")}
+                requiredFieldError="This field is required"
+                returnAfterPickupError="Return must be after pickup"
+              />
             </div>
           </div>
         </div>
@@ -280,89 +216,6 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════════
-          SECTION 4: FEATURED VEHICLES
-          ═══════════════════════════════════════════ */}
-      {featuredCars.length > 0 && (
-        <section className="container mx-auto px-4 py-20">
-          <div className="flex items-end justify-between mb-12">
-            <div>
-              <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
-                <Car className="mr-1.5 h-3.5 w-3.5" />
-                {t("featuredVehiclesTitle")}
-              </Badge>
-              <h2 className="text-3xl md:text-4xl font-bold">{t("featuredVehiclesSubtitle")}</h2>
-            </div>
-            <Link href="/cars" className="hidden md:flex items-center gap-1 text-sm font-medium text-primary hover:underline">
-              {t("viewAllCars")}
-              <ArrowRight className="h-4 w-4" />
-            </Link>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredCars.map((car) => {
-              const primaryImage = car.images[0];
-              return (
-                <Link key={car.id} href={`/cars/${car.slug}`}>
-                  <Card className="group overflow-hidden border-0 shadow-md hover:shadow-xl transition-all duration-300 hover:-translate-y-1">
-                    <div className="relative aspect-[16/10] bg-muted overflow-hidden">
-                      {primaryImage ? (
-                        <img
-                          src={primaryImage.url}
-                          alt={primaryImage.alt || car.name}
-                          className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-muted to-muted/50">
-                          <Car className="h-12 w-12 text-muted-foreground/30" />
-                        </div>
-                      )}
-                      <Badge className="absolute top-3 left-3 bg-background/80 backdrop-blur-sm">
-                        {car.brand.name}
-                      </Badge>
-                    </div>
-                    <CardContent className="p-5">
-                      <h3 className="font-semibold text-lg group-hover:text-primary transition-colors">{car.name}</h3>
-                      <div className="flex items-center gap-3 mt-2 text-sm text-muted-foreground">
-                        <span className="flex items-center gap-1">
-                          <Fuel className="h-3.5 w-3.5" />
-                          {car.fuelType}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Settings2 className="h-3.5 w-3.5" />
-                          {car.transmission}
-                        </span>
-                        <span className="flex items-center gap-1">
-                          <Users className="h-3.5 w-3.5" />
-                          {car.seats}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-between mt-4 pt-4 border-t">
-                        <div>
-                          <span className="text-2xl font-bold">{formatCurrency(car.pricePerDay.toString())}</span>
-                          <span className="text-muted-foreground text-sm">/{t("common:day")}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Star className="h-4 w-4 fill-amber-400 text-amber-400" />
-                          <span className="text-sm font-medium">{Number(car.averageRating.toString()).toFixed(1)}</span>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                </Link>
-              );
-            })}
-          </div>
-          <div className="mt-8 text-center md:hidden">
-            <Link href="/cars">
-              <Button variant="outline" className="gap-2">
-                {t("viewAllCars")}
-                <ArrowRight className="h-4 w-4" />
-              </Button>
-            </Link>
-          </div>
-        </section>
-      )}
-
-      {/* ═══════════════════════════════════════════
           SECTION 5: WHY CHOOSE US
           ═══════════════════════════════════════════ */}
       <section className="bg-muted/30 py-20">
@@ -393,33 +246,35 @@ export default async function HomePage() {
       {/* ═══════════════════════════════════════════
           SECTION 6: HOW IT WORKS
           ═══════════════════════════════════════════ */}
-      <section className="py-20">
+      <section className="py-24">
         <div className="container mx-auto px-4">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold">{t("howItWorksTitle")}</h2>
-            <p className="text-muted-foreground mt-3">{t("howItWorksSubtitle")}</p>
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
+              <Zap className="mr-1.5 h-3.5 w-3.5" />
+              {t("howItWorksTitle")}
+            </Badge>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">{t("howItWorksTitle")}</h2>
+            <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
+              {t("howItWorksSubtitle")}
+            </p>
           </div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-4xl mx-auto relative">
-            {/* Connection line */}
-            <div className="hidden md:block absolute top-16 left-[20%] right-[20%] h-px bg-gradient-to-r from-primary/20 via-primary/40 to-primary/20" />
-
-            {STEPS.map((step, i) => {
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {[
+              { step: "1", icon: MapPin, title: t("step1Title"), desc: t("step1Desc") },
+              { step: "2", icon: Car, title: t("step2Title"), desc: t("step2Desc") },
+              { step: "3", icon: Zap, title: t("step3Title"), desc: t("step3Desc") },
+            ].map((step, i) => {
               const Icon = step.icon;
               return (
-                <div key={step.number} className="text-center relative">
-                  <div className="relative mx-auto mb-6">
-                    <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-primary/10 to-primary/5 flex items-center justify-center border border-primary/10">
-                      <Icon className="h-7 w-7 text-primary" />
-                    </div>
-                    <span className="absolute -top-2 -right-2 h-7 w-7 rounded-full bg-primary text-primary-foreground text-xs font-bold flex items-center justify-center shadow-lg">
-                      {step.number}
-                    </span>
+                <div key={i} className="text-center group">
+                  <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
+                    <Icon className="h-7 w-7 text-primary" />
                   </div>
-                  <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
-                  <p className="text-muted-foreground text-sm leading-relaxed max-w-xs mx-auto">{step.description}</p>
-                  {i < STEPS.length - 1 && (
-                    <ChevronRight className="hidden md:block absolute top-14 -right-4 h-5 w-5 text-muted-foreground/30" />
-                  )}
+                  <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold mb-3">
+                    {step.step}
+                  </div>
+                  <h3 className="font-bold text-lg mb-2">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
                 </div>
               );
             })}
@@ -571,13 +426,13 @@ export default async function HomePage() {
           SECTION 11: CTA
           ═══════════════════════════════════════════ */}
       <section className="relative py-24 overflow-hidden">
-        <div className="absolute inset-0 bg-gradient-to-br from-gray-950 via-slate-900 to-gray-950" />
-        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,rgba(200,120,40,0.1),transparent_60%)]" />
+        <div className="absolute inset-0 bg-gradient-to-br from-secondary via-background to-secondary" />
+        <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_50%_50%,rgba(245,158,11,0.08),transparent_60%)]" />
         <div className="relative container mx-auto px-4 text-center">
-          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-4">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-foreground mb-4">
             {t("ctaTitle")}
           </h2>
-          <p className="text-gray-400 max-w-lg mx-auto mb-8 text-lg">
+          <p className="text-muted-foreground max-w-lg mx-auto mb-8 text-lg">
             {t("ctaSubtitle")}
           </p>
           <div className="flex flex-wrap justify-center gap-4">
@@ -588,7 +443,7 @@ export default async function HomePage() {
               </Button>
             </Link>
             <Link href="/contact">
-              <Button size="lg" variant="outline" className="dark:border-white/20 dark:text-white dark:hover:bg-white/10 px-8 text-base">
+                  <Button size="lg" variant="outline" className="px-8 text-base">
                 <Phone className="mr-2 h-4 w-4" />
                 {t("contactUs")}
               </Button>

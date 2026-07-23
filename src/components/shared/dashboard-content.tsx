@@ -214,7 +214,7 @@ export default function DashboardOverview() {
                     <p className="text-xs text-muted-foreground">{car.brand.name}</p>
                     <p className="font-medium text-sm truncate">{car.name}</p>
                     <div className="flex items-center justify-between mt-2">
-                      <span className="font-bold">${Number(car.pricePerDay).toFixed(0)}<span className="text-xs text-muted-foreground font-normal">{tc("perDay")}</span></span>
+                      <span className="font-bold">MAD {Number(car.pricePerDay).toFixed(0)}<span className="text-xs text-muted-foreground font-normal">{tc("perDay")}</span></span>
                       <div className="flex items-center gap-1">
                         <Star className="h-3 w-3 fill-amber-400 text-amber-400" />
                         <span className="text-xs">{Number(car.averageRating).toFixed(1)}</span>

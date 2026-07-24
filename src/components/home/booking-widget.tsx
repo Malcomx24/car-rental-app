@@ -102,8 +102,6 @@ export function BookingWidget({
     router.push(`/cars?${params.toString()}`);
   };
 
-  const selectedLoc = locations.find((l) => l.id === selectedLocation);
-
   return (
     <div className="rounded-2xl p-8 shadow-2xl max-w-md ml-auto bg-card border border-border backdrop-blur-xl">
       <h3 className="font-semibold text-lg mb-6">{browseFleetLabel}</h3>
@@ -125,13 +123,18 @@ export function BookingWidget({
             <SelectTrigger className="w-full h-[52px] bg-muted border-border rounded-lg px-4 text-sm">
               <div className="flex items-center gap-2">
                 <MapPin className="h-4 w-4 text-muted-foreground shrink-0" />
-                <SelectValue placeholder={pickupLocationLabel} />
+                <SelectValue placeholder={pickupLocationLabel}>
+                  {(value) => {
+                    const loc = locations.find((l) => l.id === value);
+                    return loc ? loc.name : pickupLocationLabel;
+                  }}
+                </SelectValue>
               </div>
             </SelectTrigger>
             <SelectContent>
               {locations.map((loc) => (
                 <SelectItem key={loc.id} value={loc.id}>
-                  {loc.name} — {loc.city}
+                  {loc.name}
                 </SelectItem>
               ))}
             </SelectContent>

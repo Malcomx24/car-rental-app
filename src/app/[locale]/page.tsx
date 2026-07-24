@@ -1,11 +1,14 @@
 import { Link } from "@/i18n/navigation";
 import { getTranslations } from "next-intl/server";
+import { db } from "@/lib/prisma";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Navbar } from "@/components/layout/navbar";
 import { AnimatedCounter } from "@/components/home/animated-counter";
 import { BookingWidget } from "@/components/home/booking-widget";
+import { FeaturedCarCard } from "@/components/home/featured-car-card";
+import type { FeaturedCar } from "@/components/home/featured-car-card";
 import {
   Car,
   Shield,
@@ -21,12 +24,6 @@ import {
   CheckCircle,
   Sparkles,
   Plane,
-  Palmtree,
-  Mountain,
-  Building,
-  Landmark,
-  Waves,
-  Sun,
   CreditCard,
   HeadphonesIcon,
   RotateCcw,
@@ -34,6 +31,23 @@ import {
 
 export default async function HomePage() {
   const t = await getTranslations("home");
+
+  let featuredCars: FeaturedCar[] = [];
+
+  try {
+    featuredCars = await db.car.findMany({
+      where: { isPublished: true, status: "AVAILABLE" },
+      include: {
+        brand: true,
+        category: true,
+        images: { where: { isPrimary: true }, take: 1 },
+      },
+      orderBy: [{ isFeatured: "desc" }, { createdAt: "desc" }],
+      take: 6,
+    });
+  } catch {
+    featuredCars = [];
+  }
 
   const STATS = [
     { label: t("statsCars"), value: 200, suffix: "+", icon: Car },
@@ -49,15 +63,6 @@ export default async function HomePage() {
     { icon: MapPin, title: t("why4Title"), desc: t("why4Desc") },
     { icon: HeadphonesIcon, title: t("why5Title"), desc: t("why5Desc") },
     { icon: CheckCircle, title: t("why6Title"), desc: t("why6Desc") },
-  ];
-
-  const DESTINATIONS = [
-    { key: "Agadir", icon: Sun, gradient: "from-amber-500 to-orange-600", title: t("destAgadir"), desc: t("destAgadirDesc") },
-    { key: "Marrakech", icon: Landmark, gradient: "from-red-500 to-rose-600", title: t("destMarrakech"), desc: t("destMarrakechDesc") },
-    { key: "Casablanca", icon: Building, gradient: "from-blue-500 to-indigo-600", title: t("destCasablanca"), desc: t("destCasablancaDesc") },
-    { key: "Tangier", icon: Waves, gradient: "from-cyan-500 to-teal-600", title: t("destTangier"), desc: t("destTangierDesc") },
-    { key: "Essaouira", icon: Palmtree, gradient: "from-emerald-500 to-green-600", title: t("destEssaouira"), desc: t("destEssaouiraDesc") },
-    { key: "Chefchaouen", icon: Mountain, gradient: "from-blue-400 to-blue-600", title: t("destChefchaouen"), desc: t("destChefchaouenDesc") },
   ];
 
   const TESTIMONIALS = [
@@ -192,7 +197,7 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════════
-          SECTION 3: STATISTICS
+          SECTION 3: STATS
           ═══════════════════════════════════════════ */}
       <section className="container mx-auto px-4 pt-12 pb-16">
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
@@ -212,6 +217,58 @@ export default async function HomePage() {
               </Card>
             );
           })}
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          SECTION 4: FEATURED CARS
+          ═══════════════════════════════════════════ */}
+      <section className="py-20">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-14">
+            <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
+              <Car className="mr-1.5 h-3.5 w-3.5" />
+              {t("featuredCarsBadge")}
+            </Badge>
+            <h2 className="text-3xl md:text-4xl font-bold">{t("featuredCarsTitle")}</h2>
+            <p className="text-muted-foreground mt-3 max-w-lg mx-auto">{t("featuredCarsSubtitle")}</p>
+          </div>
+
+          {featuredCars.length === 0 ? (
+            <div className="text-center py-16">
+              <Car className="h-16 w-16 mx-auto text-muted-foreground/20 mb-4" />
+              <p className="text-muted-foreground mb-6">{t("noFeaturedCars")}</p>
+              <Link href="/cars">
+                <Button variant="accent" className="font-semibold">
+                  {t("browseAllCars")}
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            <>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-6">
+                {featuredCars.map((car) => (
+                  <FeaturedCarCard
+                    key={car.id}
+                    car={car}
+                    viewDetailsLabel={t("viewDetails")}
+                    featuredLabel={t("featured")}
+                    availableLabel={t("available")}
+                    perDayLabel={t("perDay")}
+                  />
+                ))}
+              </div>
+              <div className="text-center mt-12">
+                <Link href="/cars">
+                  <Button size="lg" variant="accent" className="px-8 text-base font-semibold">
+                    {t("browseAllCars")}
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+            </>
+          )}
         </div>
       </section>
 
@@ -244,114 +301,9 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════════
-          SECTION 6: HOW IT WORKS
-          ═══════════════════════════════════════════ */}
-      <section className="py-24">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-16">
-            <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
-              <Zap className="mr-1.5 h-3.5 w-3.5" />
-              {t("howItWorksTitle")}
-            </Badge>
-            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">{t("howItWorksTitle")}</h2>
-            <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
-              {t("howItWorksSubtitle")}
-            </p>
-          </div>
-          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
-            {[
-              { step: "1", icon: MapPin, title: t("step1Title"), desc: t("step1Desc") },
-              { step: "2", icon: Car, title: t("step2Title"), desc: t("step2Desc") },
-              { step: "3", icon: Zap, title: t("step3Title"), desc: t("step3Desc") },
-            ].map((step, i) => {
-              const Icon = step.icon;
-              return (
-                <div key={i} className="text-center group">
-                  <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
-                    <Icon className="h-7 w-7 text-primary" />
-                  </div>
-                  <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold mb-3">
-                    {step.step}
-                  </div>
-                  <h3 className="font-bold text-lg mb-2">{step.title}</h3>
-                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════
-          SECTION 7: WHY CHOOSE US (FEATURES) - REUSED
-          ═══════════════════════════════════════════ */}
-      <section className="py-20 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold">{t("featuresTitle")}</h2>
-            <p className="text-muted-foreground mt-3 max-w-lg mx-auto">{t("featuresSubtitle")}</p>
-          </div>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {[
-              { icon: Shield, title: t("feature1Title"), desc: t("feature1Desc") },
-              { icon: Clock, title: t("feature2Title"), desc: t("feature2Desc") },
-              { icon: Zap, title: t("feature3Title"), desc: t("feature3Desc") },
-              { icon: MapPin, title: t("feature4Title"), desc: t("feature4Desc") },
-            ].map((feature, i) => {
-              const Icon = feature.icon;
-              return (
-                <Card key={i} className="group hover:shadow-lg transition-all duration-300 border-0 bg-card/50 hover:-translate-y-1">
-                  <CardContent className="p-6">
-                    <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-4 group-hover:bg-primary group-hover:text-primary-foreground transition-colors duration-300">
-                      <Icon className="h-6 w-6 text-primary group-hover:text-primary-foreground transition-colors duration-300" />
-                    </div>
-                    <h3 className="font-semibold text-lg mb-2">{feature.title}</h3>
-                    <p className="text-sm text-muted-foreground leading-relaxed">{feature.desc}</p>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════
-          SECTION 8: POPULAR DESTINATIONS
+          SECTION 6: TESTIMONIALS
           ═══════════════════════════════════════════ */}
       <section className="py-20">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-14">
-            <h2 className="text-3xl md:text-4xl font-bold">{t("destinationsTitle")}</h2>
-            <p className="text-muted-foreground mt-3">{t("destinationsSubtitle")}</p>
-          </div>
-          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
-            {DESTINATIONS.map((dest) => {
-              const Icon = dest.icon;
-              return (
-                <Link key={dest.key} href="/locations">
-                  <div className={`group relative overflow-hidden rounded-2xl bg-gradient-to-br ${dest.gradient} p-6 min-h-[180px] flex flex-col justify-end hover:shadow-xl transition-all duration-300 hover:-translate-y-1`}>
-                    <div className="absolute inset-0 bg-black/20 group-hover:bg-black/10 transition-colors" />
-                    <div className="relative z-10">
-                      <Icon className="h-8 w-8 text-white/80 mb-3" />
-                      <h3 className="text-white text-xl font-bold">{dest.title}</h3>
-                      <p className="text-white/80 text-sm mt-1">{dest.desc}</p>
-                      <span className="inline-flex items-center gap-1 text-white/90 text-sm font-medium mt-3 group-hover:gap-2 transition-all">
-                        {t("destinationsCta")}
-                        <ArrowRight className="h-4 w-4" />
-                      </span>
-                    </div>
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══════════════════════════════════════════
-          SECTION 9: TESTIMONIALS
-          ═══════════════════════════════════════════ */}
-      <section className="py-20 bg-muted/30">
         <div className="container mx-auto px-4">
           <div className="text-center mb-14">
             <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
@@ -388,7 +340,46 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════════
-          SECTION 10: TRUST / SAFETY
+          SECTION 7: HOW IT WORKS
+          ═══════════════════════════════════════════ */}
+      <section className="py-24 bg-muted/30">
+        <div className="container mx-auto px-4">
+          <div className="text-center mb-16">
+            <Badge className="mb-4 bg-primary/10 text-primary border-primary/20">
+              <Zap className="mr-1.5 h-3.5 w-3.5" />
+              {t("howItWorksTitle")}
+            </Badge>
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold">{t("howItWorksTitle")}</h2>
+            <p className="text-muted-foreground mt-3 max-w-lg mx-auto">
+              {t("howItWorksSubtitle")}
+            </p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-8 max-w-5xl mx-auto">
+            {[
+              { step: "1", icon: MapPin, title: t("step1Title"), desc: t("step1Desc") },
+              { step: "2", icon: Car, title: t("step2Title"), desc: t("step2Desc") },
+              { step: "3", icon: Zap, title: t("step3Title"), desc: t("step3Desc") },
+            ].map((step, i) => {
+              const Icon = step.icon;
+              return (
+                <div key={i} className="text-center group">
+                  <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-5 group-hover:bg-primary/20 transition-colors">
+                    <Icon className="h-7 w-7 text-primary" />
+                  </div>
+                  <div className="inline-flex h-7 w-7 items-center justify-center rounded-full bg-primary text-primary-foreground text-xs font-bold mb-3">
+                    {step.step}
+                  </div>
+                  <h3 className="font-bold text-lg mb-2">{step.title}</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{step.desc}</p>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══════════════════════════════════════════
+          SECTION 8: SAFETY & SECURITY
           ═══════════════════════════════════════════ */}
       <section className="py-20">
         <div className="container mx-auto px-4">
@@ -423,7 +414,7 @@ export default async function HomePage() {
       </section>
 
       {/* ═══════════════════════════════════════════
-          SECTION 11: CTA
+          SECTION 9: CTA
           ═══════════════════════════════════════════ */}
       <section className="relative py-24 overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-secondary via-background to-secondary" />
